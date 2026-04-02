@@ -40,13 +40,14 @@
         }
 
         body {
+            padding-top: max(12px, env(safe-area-inset-top));
             padding-bottom: 60px;
         }
 
         /* Main container */
         .container {
             width: 100%;
-            height: calc(100vh - 60px);
+            height: calc(100vh - 60px - max(12px, env(safe-area-inset-top)));
             position: relative;
             overflow: hidden;
         }
@@ -458,7 +459,7 @@
         <div id="today" class="tab-content active">
             <div class="page-header">
                 <button class="nav-button" id="prevDay">← 前日</button>
-                <div class="page-title" id="todayTitle">04/02 (木)</div>
+                <div class="page-title" id="todayTitle">読み込み中...</div>
                 <button class="nav-button" id="nextDay">次日 →</button>
             </div>
             <div class="progress-container">
@@ -1121,8 +1122,8 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
         // ====================================================================
 
         function renderMemorizationTab() {
-            const today = new Date('2026-04-02');
-            const elapsedDays = Math.floor((new Date() - today) / (1000 * 60 * 60 * 24));
+            const startDate = new Date(CALENDAR_DATA[0].date + 'T00:00:00');
+            const elapsedDays = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
             const currentWeek = Math.max(1, Math.floor(elapsedDays / 7) + 1);
 
             const weekContent = document.getElementById('mem-week');
@@ -1333,7 +1334,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
 
             // Speed Reading
             const readingContent = document.getElementById('weak-reading');
-            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 12px; display: none;"><span id="timerValue">00:00</span></div><div id="readingContent"></div><div style="display: flex; gap: 8px; margin-bottom: 12px; display: none;" id="readingControls"><button class="btn btn-success" id="startTimer" style="flex: 1; display: none;">スタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; display: none;">読了</button></div><div id="readingQuestions" style="margin-top: 16px;"></div><button class="btn btn-primary" id="submitReading" style="display: none;">採点</button><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
+            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; margin-bottom: 16px; display: none; background: #1F4E79; color: white; padding: 16px; border-radius: 10px;"><div style="font-size: 11px; margin-bottom: 4px; opacity: 0.8;">経過時間</div><span id="timerValue" style="font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px;">00:00</span></div><div id="readingControls" style="display: none; gap: 8px; margin-bottom: 14px;"><button class="btn btn-success" id="startTimer" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600;">⏱ タイマースタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600; display: none;">⏹ 読了</button></div><div id="readingContent"></div><div id="readingQuestions" style="margin-top: 16px;"></div><button class="btn btn-primary" id="submitReading" style="display: none;">採点</button><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
 
             let readingStartTime = null;
             let readingInterval = null;
@@ -1369,10 +1370,14 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                         document.getElementById('readingQuestions').innerHTML = qsHtml;
                         document.getElementById('submitReading').style.display = 'block';
 
-                        // Show reading controls
+                        // Show reading controls - reset timer state
                         document.getElementById('readingControls').style.display = 'flex';
                         document.getElementById('startTimer').style.display = 'block';
-                        document.getElementById('finishReading').style.display = 'block';
+                        document.getElementById('finishReading').style.display = 'none';
+                        document.getElementById('readingTimer').style.display = 'none';
+                        document.getElementById('readingWPM').style.display = 'none';
+                        if (readingInterval) clearInterval(readingInterval);
+                        readingStartTime = null;
                     }
                 }
             });
@@ -1382,6 +1387,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                     readingStartTime = Date.now();
                     document.getElementById('readingTimer').style.display = 'block';
                     document.getElementById('startTimer').style.display = 'none';
+                    document.getElementById('finishReading').style.display = 'block';
                     readingInterval = setInterval(() => {
                         const elapsed = Math.floor((Date.now() - readingStartTime) / 1000);
                         const minutes = Math.floor(elapsed / 60);
@@ -1587,6 +1593,18 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
 
         function init() {
             loadState();
+
+            // 今日の日付をCALENDAR_DATAから自動検索してセット
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const todayStr = yyyy + '-' + mm + '-' + dd;
+            const todayIdx = CALENDAR_DATA.findIndex(d => d.date === todayStr);
+            if (todayIdx >= 0) {
+                APP_STATE.currentDateIndex = todayIdx;
+            }
+
             setupTabNavigation();
             setupDayNavigation();
             renderTodayTab();

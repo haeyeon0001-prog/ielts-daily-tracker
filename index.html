@@ -1334,7 +1334,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
 
             // Speed Reading
             const readingContent = document.getElementById('weak-reading');
-            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; margin-bottom: 16px; display: none; background: #1F4E79; color: white; padding: 16px; border-radius: 10px;"><div style="font-size: 11px; margin-bottom: 4px; opacity: 0.8;">経過時間</div><span id="timerValue" style="font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px;">00:00</span></div><div id="readingControls" style="display: none; gap: 8px; margin-bottom: 14px;"><button class="btn btn-success" id="startTimer" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600;">⏱ タイマースタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600; display: none;">⏹ 読了</button></div><div id="readingContent"></div><div id="readingQuestions" style="margin-top: 16px;"></div><button class="btn btn-primary" id="submitReading" style="display: none;">採点</button><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
+            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; margin-bottom: 16px; display: none; background: #1F4E79; color: white; padding: 16px; border-radius: 10px;"><div style="font-size: 11px; margin-bottom: 4px; opacity: 0.8;">経過時間</div><span id="timerValue" style="font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px;">00:00</span></div><div id="readingControls" style="display: none; gap: 8px; margin-bottom: 14px;"><button class="btn btn-success" id="startTimer" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600;">⏱ タイマースタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600; display: none;">⏹ 読了</button></div><div id="readingContent"></div><div id="readingQuestions" style="margin-top: 16px;"></div><div id="submitReadingWrap" style="display: none; position: sticky; bottom: 0; padding: 10px 0; background: white; z-index: 10;"><button class="btn btn-primary" id="submitReading" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600;">📝 採点する</button></div><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
 
             let readingStartTime = null;
             let readingInterval = null;
@@ -1368,7 +1368,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                             qsHtml += '<div style="margin-bottom: 12px; padding: 12px; background: var(--light); border-radius: 6px;"><div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Q' + (i+1) + ': ' + q.q + '</div><div>' + q.opts.map((opt, j) => '<label style="display: block; margin: 6px 0;"><input type="radio" name="comp' + i + '" value="' + j + '" style="margin-right: 6px;"> ' + opt + '</label>').join('') + '</div></div>';
                         });
                         document.getElementById('readingQuestions').innerHTML = qsHtml;
-                        document.getElementById('submitReading').style.display = 'block';
+                        document.getElementById('submitReadingWrap').style.display = 'block';
 
                         // Show reading controls - reset timer state
                         document.getElementById('readingControls').style.display = 'flex';
@@ -1402,6 +1402,33 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                     const wpm = Math.round(wordCount / elapsed);
                     document.getElementById('readingWPM').innerHTML = '<div style="font-size: 16px; font-weight: 600; color: var(--primary);">読速: ' + wpm + ' WPM</div>';
                     document.getElementById('readingWPM').style.display = 'block';
+                }
+                if (e.target.id === 'submitReading') {
+                    const level = document.getElementById('readingLevel').value;
+                    const topicEl = document.getElementById('readingTopic');
+                    if (!topicEl) return;
+                    const topic = topicEl.value;
+                    const data = speedTexts[level] && speedTexts[level][topic];
+                    if (!data) return;
+                    let correct = 0;
+                    let total = data.qs.length;
+                    let resultHtml = '';
+                    data.qs.forEach((q, i) => {
+                        const selected = document.querySelector('input[name="comp' + i + '"]:checked');
+                        const userAns = selected ? parseInt(selected.value) : -1;
+                        const isCorrect = userAns === q.ans;
+                        if (isCorrect) correct++;
+                        resultHtml += '<div style="padding: 10px; margin-bottom: 8px; border-radius: 6px; background:' + (isCorrect ? '#d4edda' : '#f8d7da') + '; border: 1px solid ' + (isCorrect ? '#c3e6cb' : '#f5c6cb') + ';">';
+                        resultHtml += '<div style="font-weight: 600; font-size: 13px;">Q' + (i+1) + ': ' + (isCorrect ? '✅ 正解' : '❌ 不正解') + '</div>';
+                        if (!isCorrect) {
+                            resultHtml += '<div style="font-size: 12px; color: #555; margin-top: 4px;">正解: ' + q.opts[q.ans] + '</div>';
+                        }
+                        resultHtml += '</div>';
+                    });
+                    const score = Math.round((correct / total) * 100);
+                    const scoreColor = score >= 80 ? '#28A745' : score >= 50 ? '#FFC107' : '#DC3545';
+                    document.getElementById('readingQuestions').innerHTML = '<div style="text-align: center; margin-bottom: 16px; padding: 16px; background: white; border: 2px solid ' + scoreColor + '; border-radius: 10px;"><div style="font-size: 14px; color: #666;">スコア</div><div style="font-size: 36px; font-weight: 700; color: ' + scoreColor + ';">' + correct + ' / ' + total + '</div><div style="font-size: 13px; color: #999;">' + score + '%</div></div>' + resultHtml;
+                    document.getElementById('submitReadingWrap').style.display = 'none';
                 }
             });
 

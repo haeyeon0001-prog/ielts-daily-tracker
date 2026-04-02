@@ -1016,7 +1016,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                     topicsSelect.innerHTML = '<select id="readingTopic"><option value="">トピック選択</option>' + topics.map(t => '<option value="' + t + '">' + t + '</option>').join('') + '</select>';
                     const firstTopic = topics[0];
                     document.getElementById('readingTopic').value = firstTopic;
-                    document.getElementById('readingTopic').dispatchEvent(new Event('change'));
+                    document.getElementById('readingTopic').dispatchEvent(new Event('change', {bubbles: true}));
                 }
             }
 
@@ -1089,7 +1089,7 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
                     document.getElementById('randomTopic').onclick = () => {
                         const randomIdx = Math.floor(Math.random() * topics.length);
                         select.value = randomIdx;
-                        select.dispatchEvent(new Event('change'));
+                        select.dispatchEvent(new Event('change', {bubbles: true}));
                     };
 
                     select.addEventListener('change', (e2) => {
@@ -1238,6 +1238,14 @@ qs:[{q:"What has superseded traditional class-based structures?",opts:["Governme
 
                     e.currentTarget.classList.add('active');
                     document.getElementById(subName).classList.add('active');
+
+                    // Re-trigger speed reading content load when switching to that sub-tab
+                    if (subName === 'weak-reading') {
+                        const topicEl = document.getElementById('readingTopic');
+                        if (topicEl && topicEl.value && !document.getElementById('readingContent').innerHTML.trim()) {
+                            topicEl.dispatchEvent(new Event('change', {bubbles: true}));
+                        }
+                    }
                 });
             });
         }

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IELTS Daily">
+<meta name="theme-color" content="#1F4E79">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>IELTS 7.0 Daily Tracker</title>
+<style>
+:root {
+  --primary: #1F4E79;
+  --accent: #2E75B6;
+  --success: #27ae60;
+  --rest: #95a5a6;
+  --sat: #27ae60;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --border: #e0e6ed;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* === Top Header === */
+.top-header {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  padding: 16px 20px 12px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.top-header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+.top-header .subtitle { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+/* === Tab Bar === */
+.tab-bar {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 58px;
+  z-index: 99;
+}
+
+.tab-bar button {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-bar button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* === Day Navigation === */
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-nav button {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-nav button:disabled { opacity: 0.3; cursor: default; }
+
+.day-nav .day-info { text-align: center; }
+.day-nav .day-date { font-size: 20px; font-weight: 700; color: var(--primary); }
+.day-nav .day-label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.day-nav .today-badge {
+  display: inline-block;
+  background: #e74c3c;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+/* === Progress Bar === */
+.progress-section {
+  padding: 8px 16px 12px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-bar-container { display: flex; align-items: center; gap: 10px; }
+
+.progress-bar {
+  flex: 1; height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text { font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+/* === Task Cards === */
+.tasks-container { padding: 12px 16px; }
+
+.task-card {
+  background: var(--card);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: transform 0.15s;
+}
+
+.task-card:active { transform: scale(0.98); }
+.task-card.completed { opacity: 0.6; }
+
+.task-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  gap: 12px;
+}
+
+.time-badge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.time-badge.morning { background: #ffeaa7; color: #d35400; }
+.time-badge.commute { background: #dfe6e9; color: #636e72; }
+.time-badge.evening { background: #74b9ff; color: #0652DD; }
+.time-badge.bedtime { background: #a29bfe; color: #4834d4; }
+.time-badge.amblock { background: #55efc4; color: #00b894; }
+.time-badge.pmblock { background: #fab1a0; color: #e17055; }
+
+.task-minutes { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--text-light); }
+
+.task-items { padding: 0 14px 14px; }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid #f0f3f5;
+}
+
+.task-item:first-child { border-top: none; }
+
+.checkbox {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.checkbox.checked { background: var(--success); border-color: var(--success); }
+.checkbox.checked::after { content: '\2713'; color: white; font-size: 14px; font-weight: 700; }
+
+.task-text { font-size: 14px; line-height: 1.5; flex: 1; }
+.task-text.done { text-decoration: line-through; color: var(--text-light); }
+
+/* === Rest Day === */
+.rest-card {
+  background: var(--card);
+  border-radius: 16px;
+  margin: 40px 16px;
+  padding: 40px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.rest-card .emoji { font-size: 48px; margin-bottom: 16px; }
+.rest-card h2 { font-size: 20px; color: var(--rest); margin-bottom: 8px; }
+.rest-card p { font-size: 14px; color: var(--text-light); }
+
+/* === Weekly View === */
+.weekly-container { padding: 12px 16px; }
+.week-group { margin-bottom: 20px; }
+
+.week-group h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 2px solid var(--accent);
+}
+
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.week-day {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 6px 2px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  min-height: 66px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.week-day:hover { border-color: var(--accent); }
+.week-day.today { border-color: var(--accent); background: #ebf5fb; }
+.week-day.rest { background: #f5f5f5; }
+.week-day.sat { background: #e8f5e9; }
+.week-day.all-done { background: #e8f8f5; border-color: var(--success); }
+
+.week-day .wd-date { font-size: 11px; font-weight: 700; color: var(--primary); }
+.week-day .wd-name { font-size: 10px; color: var(--text-light); margin-top: 1px; }
+.week-day .wd-time { font-size: 10px; font-weight: 600; margin-top: 4px; color: var(--accent); }
+.week-day .wd-check { font-size: 9px; margin-top: 2px; color: var(--success); }
+.week-day.rest .wd-time { color: var(--rest); font-size: 16px; }
+
+/* === Stats View === */
+.stats-container { padding: 16px; }
+
+.stat-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.stat-card .stat-value { font-size: 36px; font-weight: 800; color: var(--primary); }
+.stat-card .stat-label { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.stats-grid .stat-card .stat-value { font-size: 28px; }
+
+.streak-bar {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.streak-dot { width: 12px; height: 12px; border-radius: 3px; background: #ecf0f1; }
+.streak-dot.done { background: var(--success); }
+.streak-dot.today { background: var(--accent); }
+.streak-dot.rest { background: #f5f5f5; border: 1px solid #ddd; }
+
+/* === Bottom Nav === */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+}
+
+.bottom-nav button {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: white;
+  font-size: 10px;
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav button .icon { font-size: 20px; }
+.bottom-nav button.active { color: var(--accent); }
+
+/* === Swipe hint === */
+.swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-light);
+  padding: 4px;
+  opacity: 0.6;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tasks-container .task-card { animation: slideIn 0.3s ease forwards; }
+.tasks-container .task-card:nth-child(2) { animation-delay: 0.05s; }
+.tasks-container .task-card:nth-child(3) { animation-delay: 0.1s; }
+.tasks-container .task-card:nth-child(4) { animation-delay: 0.15s; }
+
+/* === Responsive: small screens === */
+@media (max-width: 374px) {
+  .week-days { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .week-day { padding: 4px 1px; min-height: 56px; }
+  .week-day .wd-date { font-size: 10px; }
+  .week-day .wd-name { font-size: 9px; }
+  .week-day .wd-time { font-size: 9px; }
+  .task-text { font-size: 13px; }
+}
+
+/* === Responsive: tablets === */
+@media (min-width: 768px) {
+  .tasks-container { max-width: 600px; margin: 0 auto; }
+  .weekly-container { max-width: 700px; margin: 0 auto; }
+  .stats-container { max-width: 600px; margin: 0 auto; }
+  .week-day { min-height: 80px; padding: 8px 4px; }
+  .week-day .wd-date { font-size: 13px; }
+  .week-day .wd-time { font-size: 12px; }
+}
+
+/* === Toast === */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <h1>IELTS 7.0 Daily Tracker</h1>
+  <div class="subtitle">Week 6 active / Sun rest</div>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="active" onclick="switchTab('today')">TODAY</button>
+  <button onclick="switchTab('weekly')">WEEKLY</button>
+  <button onclick="switchTab('stats')">STATS</button>
+</div>
+
+<div id="todayView">
+  <div class="day-nav">
+    <button id="prevBtn" onclick="navigate(-1)">&larr;</button>
+    <div class="day-info">
+      <div class="day-date" id="dayDate">04/02 (木)</div>
+      <div class="day-label" id="dayLabel">Week 1 - Day 1/57</div>
+      <div id="todayBadge"></div>
+    </div>
+    <button id="nextBtn" onclick="navigate(1)">&rarr;</button>
+  </div>
+  <div class="progress-section">
+    <div class="progress-bar-container">
+      <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-text" id="progressText">0/0</div>
+    </div>
+  </div>
+  <div class="swipe-hint" id="swipeHint">&larr; スワイプで日付移動 &rarr;</div>
+  <div class="tasks-container" id="tasksContainer"></div>
+</div>
+
+<div id="weeklyView" style="display:none">
+  <div class="weekly-container" id="weeklyContainer"></div>
+</div>
+
+<div id="statsView" style="display:none">
+  <div class="stats-container" id="statsContainer"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="active" onclick="switchTab('today')"><span class="icon">&#128197;</span>Today</button>
+  <button onclick="switchTab('weekly')"><span class="icon">&#128198;</span>Weekly</button>
+  <button onclick="switchTab('stats')"><span class="icon">&#128200;</span>Stats</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CALENDAR = [{"date":"2026-04-02","dateDisplay":"04/02","dayName":"木","week":"Week 1 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec01 読み込み+音声(10分)\n② BBC 6Min English① 字幕ON 1回目(10分)\n③ 語彙本 Sec01 例文音読(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use Unit1-2 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1-2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-04-03","dateDisplay":"04/03","dayName":"金","week":"Week 1 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec02 読み込み(10分)\n② BBC① 字幕ON 2回目+スクリプト確認(10分)\n③ 暗記文 昨夜1-2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use Unit1-2 後半(25分)\n⑥ Graded Reader (Level2) 読み始め(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3-4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-04-04","dateDisplay":"04/04","dayName":"土","week":"Week 1 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 Sec01-02 総復習(15分)\n② 暗記文 昨夜3-4文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC① シャドーイング×3回(30分)\n④ Grammar Unit1-2 総復習(40分)\n⑤ Graded Reader (Level2) 集中読書(40分)\n⑥ iTalki レッスン 発音・基礎(25分)+復習(15分)","minutes":150},{"time":"午後 14:00-15:30","detail":"⑦ 基礎文法ドリル 復習・追加演習(25分)\n⑧ Speaking Coach: Part1×4問+会話×2(25分)\n⑨ 暗記文 新規5文目+全5文 総復習(25分)\n⑩ 来週の計画確認(15分)","minutes":90}],"total":270},{"date":"2026-04-05","dateDisplay":"04/05","dayName":"日","week":"Week 1 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-04-06","dateDisplay":"04/06","dayName":"月","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec03 読み込み+音声(10分)\n② BBC 6Min English② 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit3-4 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-07","dateDisplay":"04/07","dayName":"火","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec03 復習(10分)\n② BBC② 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit3-4 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-08","dateDisplay":"04/08","dayName":"水","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec04 読み込み(10分)\n② BBC② シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit3-4 後半(25分)\n⑥ Graded Reader (Level2)続き 5ページ(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-09","dateDisplay":"04/09","dayName":"木","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec04 復習(10分)\n② BBC② シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit3-4 後半(25分)\n⑥ Graded Reader (Level2)続き 5ページ(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-10","dateDisplay":"04/10","dayName":"金","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec03-04 総復習(10分)\n② BBC② シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar 今週分復習(25分)\n⑥ Graded Reader (Level2)続き 5ページ(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-11","dateDisplay":"04/11","dayName":"土","week":"Week 2 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 Sec05 先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC 6Min English 追加×1本(30分)\n④ Grammar in Use 今週分の総復習(40分)\n⑤ Graded Reader 集中読書タイム(50分)\n⑥ iTalki レッスン 発音・基礎(25分)+復習(15分)","minutes":160},{"time":"午後 14:00-15:30","detail":"⑦ 基礎文法ドリル 復習・追加演習(25分)\n⑧ Speaking Coach: Part1×4問+会話×2(25分)\n⑨ 暗記文 W1分含む全5文総復習(25分)\n⑩ 来週の計画確認(15分)","minutes":90}],"total":280},{"date":"2026-04-12","dateDisplay":"04/12","dayName":"日","week":"Week 2 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-04-13","dateDisplay":"04/13","dayName":"月","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec05 読み込み+音声(10分)\n② BBC 6Min English③ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit5-6 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-14","dateDisplay":"04/14","dayName":"火","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec05 復習(10分)\n② BBC③ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit5-6 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-15","dateDisplay":"04/15","dayName":"水","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec06 読み込み(10分)\n② BBC③ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit5-6 後半(25分)\n⑥ Graded Reader (Level2)2冊目開始(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-16","dateDisplay":"04/16","dayName":"木","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec06 復習(10分)\n② BBC③ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit5-6 後半(25分)\n⑥ Graded Reader (Level2)2冊目開始(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-17","dateDisplay":"04/17","dayName":"金","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec05-06 総復習(10分)\n② BBC③ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar 今週分復習(25分)\n⑥ Graded Reader (Level2)2冊目開始(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-18","dateDisplay":"04/18","dayName":"土","week":"Week 3 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 Sec07 先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC 6Min English 追加×1本(30分)\n④ Grammar in Use 今週分の総復習(40分)\n⑤ Graded Reader 集中読書タイム(50分)\n⑥ iTalki レッスン 発音・基礎(25分)+復習(15分)","minutes":160},{"time":"午後 14:00-15:30","detail":"⑦ 基礎文法ドリル 復習・追加演習(25分)\n⑧ Speaking Coach: Part1×4問+会話×2(25分)\n⑨ 暗記文 W1-2分含む全5文総復習(25分)\n⑩ 来週の計画確認(15分)","minutes":90}],"total":280},{"date":"2026-04-19","dateDisplay":"04/19","dayName":"日","week":"Week 3 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-04-20","dateDisplay":"04/20","dayName":"月","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec07 読み込み+音声(10分)\n② BBC 6Min English④ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit7-8 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-21","dateDisplay":"04/21","dayName":"火","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec07 復習(10分)\n② BBC④ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit7-8 前半(25分)\n⑥ 基礎文法ドリル(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-22","dateDisplay":"04/22","dayName":"水","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec08 読み込み(10分)\n② BBC④ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit7-8 後半(25分)\n⑥ Graded Reader (Level2)2冊目続き(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-23","dateDisplay":"04/23","dayName":"木","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec08 復習(10分)\n② BBC④ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar in Use Unit7-8 後半(25分)\n⑥ Graded Reader (Level2)2冊目続き(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-24","dateDisplay":"04/24","dayName":"金","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec07-08 総復習(10分)\n② BBC④ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:10","detail":"⑤ Grammar 今週分復習(25分)\n⑥ Graded Reader (Level2)2冊目続き(25分)\n⑦ Speaking Coach: Part1×2問+会話×1(20分)","minutes":70},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":135},{"date":"2026-04-25","dateDisplay":"04/25","dayName":"土","week":"Week 4 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 Sec09 先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC 6Min English 追加×1本(30分)\n④ Grammar in Use 今週分の総復習(40分)\n⑤ Graded Reader 集中読書タイム(50分)\n⑥ iTalki レッスン 発音・基礎(25分)+復習(15分)","minutes":160},{"time":"午後 14:00-15:30","detail":"⑦ 基礎文法ドリル 復習・追加演習(25分)\n⑧ Speaking Coach: Part1×4問+会話×2(25分)\n⑨ 暗記文 W1-3分含む全5文総復習(25分)\n⑩ 来週の計画確認(15分)","minutes":90}],"total":280},{"date":"2026-04-26","dateDisplay":"04/26","dayName":"日","week":"Week 4 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-04-27","dateDisplay":"04/27","dayName":"月","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec09 読み込み+音声(10分)\n② BBC 6Min English⑤ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 9-10(25分)\n⑥ Writing基礎: Task2構成パターン学習\n(意見文: 導入→本論→結論)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-04-28","dateDisplay":"04/28","dayName":"火","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec09 復習(10分)\n② BBC⑤ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 9-10(25分)\n⑥ Writing基礎: Task2構成パターン学習\n(意見文: 導入→本論→結論)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-04-29","dateDisplay":"04/29","dayName":"水","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec10 読み込み(10分)\n② BBC⑤ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)開始(25分)\n⑥ Writing基礎: Opinion型エッセイ構成分析(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-04-30","dateDisplay":"04/30","dayName":"木","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec10 復習(10分)\n② BBC⑤ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)開始(25分)\n⑥ Writing基礎: Opinion型エッセイ構成分析(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-01","dateDisplay":"05/01","dayName":"金","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec09-10 総復習(10分)\n② BBC⑤ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar+Reading 今週復習(25分)\n⑥ Writing 今週の振返り・整理(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-02","dateDisplay":"05/02","dayName":"土","week":"Week 5 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 次週分の先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC追加×1本(30分)\n④ Grammar総復習(30分)\n⑤ Graded Reader 集中読書(40分)\n⑥ Writing モデルエッセイ分析×1本(30分)\n⑦ iTalki レッスン(25分)+復習(15分)","minutes":170},{"time":"午後 14:00-15:30","detail":"⑧ Speaking Coach: Part1×4問+会話×2(30分)\n⑨ 暗記文 W1-4分含む全5文総復習(25分)\n⑩ Writingテンプレート復習+来週計画(25分)","minutes":80}],"total":280},{"date":"2026-05-03","dateDisplay":"05/03","dayName":"日","week":"Week 5 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-05-04","dateDisplay":"05/04","dayName":"月","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec11 読み込み+音声(10分)\n② BBC 6Min English⑥ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 11-12(25分)\n⑥ Writing基礎: モデルエッセイ分析×1本\n(導入文の暗記)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-05","dateDisplay":"05/05","dayName":"火","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec11 復習(10分)\n② BBC⑥ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 11-12(25分)\n⑥ Writing基礎: モデルエッセイ分析×1本\n(導入文の暗記)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-06","dateDisplay":"05/06","dayName":"水","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec12 読み込み(10分)\n② BBC⑥ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)続き+BBC記事①(25分)\n⑥ Writing基礎: モデルエッセイ分析\n(結論文の暗記)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-07","dateDisplay":"05/07","dayName":"木","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec12 復習(10分)\n② BBC⑥ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)続き+BBC記事①(25分)\n⑥ Writing基礎: モデルエッセイ分析\n(結論文の暗記)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-08","dateDisplay":"05/08","dayName":"金","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec11-12 総復習(10分)\n② BBC⑥ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar+Reading 今週復習(25分)\n⑥ Writing 今週の振返り・整理(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-09","dateDisplay":"05/09","dayName":"土","week":"Week 6 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 次週分の先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC追加×1本(30分)\n④ Grammar総復習(30分)\n⑤ Graded Reader 集中読書(40分)\n⑥ Writing モデルエッセイ分析×1本(30分)\n⑦ iTalki レッスン(25分)+復習(15分)","minutes":170},{"time":"午後 14:00-15:30","detail":"⑧ Speaking Coach: Part1×4問+会話×2(30分)\n⑨ 暗記文 W1-5分含む全5文総復習(25分)\n⑩ Writingテンプレート復習+来週計画(25分)","minutes":80}],"total":280},{"date":"2026-05-10","dateDisplay":"05/10","dayName":"日","week":"Week 6 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-05-11","dateDisplay":"05/11","dayName":"月","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec13 読み込み+音声(10分)\n② BBC 6Min English⑦ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 13-14(25分)\n⑥ Writing基礎: Opinion型テンプレート暗記\n(I believe that...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-12","dateDisplay":"05/12","dayName":"火","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec13 復習(10分)\n② BBC⑦ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 13-14(25分)\n⑥ Writing基礎: Opinion型テンプレート暗記\n(I believe that...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-13","dateDisplay":"05/13","dayName":"水","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec14 読み込み(10分)\n② BBC⑦ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)2冊目+BBC記事(25分)\n⑥ Writing基礎: 短い段落ライティング×1\n(100語Opinion段落)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-14","dateDisplay":"05/14","dayName":"木","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec14 復習(10分)\n② BBC⑦ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader (Level3)2冊目+BBC記事(25分)\n⑥ Writing基礎: 短い段落ライティング×1\n(100語Opinion段落)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-15","dateDisplay":"05/15","dayName":"金","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec13-14 総復習(10分)\n② BBC⑦ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar+Reading 今週復習(25分)\n⑥ Writing 今週の振返り・整理(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-16","dateDisplay":"05/16","dayName":"土","week":"Week 7 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 次週分の先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC追加×1本(30分)\n④ Grammar総復習(30分)\n⑤ Graded Reader 集中読書(40分)\n⑥ Writing モデルエッセイ分析×1本(30分)\n⑦ iTalki レッスン(25分)+復習(15分)","minutes":170},{"time":"午後 14:00-15:30","detail":"⑧ Speaking Coach: Part1×4問+会話×2(30分)\n⑨ 暗記文 W1-6分含む全5文総復習(25分)\n⑩ Writingテンプレート復習+来週計画(25分)","minutes":80}],"total":280},{"date":"2026-05-17","dateDisplay":"05/17","dayName":"日","week":"Week 7 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-05-18","dateDisplay":"05/18","dayName":"月","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec15 読み込み+音声(10分)\n② BBC 6Min English⑧ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 15-16(25分)\n⑥ Writing基礎: Discussion型テンプレート暗記\n(Some argue... / On the other hand...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-19","dateDisplay":"05/19","dayName":"火","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec15 復習(10分)\n② BBC⑧ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use 15-16(25分)\n⑥ Writing基礎: Discussion型テンプレート暗記\n(Some argue... / On the other hand...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-20","dateDisplay":"05/20","dayName":"水","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec16 読み込み(10分)\n② BBC⑧ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader 仕上げ+BBC記事(25分)\n⑥ Writing基礎: Udemy Writing基礎コース\n(Lecture 1-3視聴)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-21","dateDisplay":"05/21","dayName":"木","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec16 復習(10分)\n② BBC⑧ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader 仕上げ+BBC記事(25分)\n⑥ Writing基礎: Udemy Writing基礎コース\n(Lecture 1-3視聴)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-22","dateDisplay":"05/22","dayName":"金","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec15-16 総復習(10分)\n② BBC⑧ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar+Reading 今週復習(25分)\n⑥ Writing 今週の振返り・整理(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-23","dateDisplay":"05/23","dayName":"土","week":"Week 8 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 次週分の先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC追加×1本(30分)\n④ Grammar総復習(30分)\n⑤ Graded Reader 集中読書(40分)\n⑥ Writing モデルエッセイ分析×1本(30分)\n⑦ iTalki レッスン(25分)+復習(15分)","minutes":170},{"time":"午後 14:00-15:30","detail":"⑧ Speaking Coach: Part1×4問+会話×2(30分)\n⑨ 暗記文 W1-7分含む全5文総復習(25分)\n⑩ Writingテンプレート復習+来週計画(25分)","minutes":80}],"total":280},{"date":"2026-05-24","dateDisplay":"05/24","dayName":"日","week":"Week 8 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-05-25","dateDisplay":"05/25","dayName":"月","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec17 読み込み+音声(10分)\n② BBC 6Min English⑨ 字幕ON 1回目(10分)\n③ 暗記文 前週総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use P1総復習(25分)\n⑥ Writing基礎: Problem-Solution型テンプレート暗記\n(A major issue...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-26","dateDisplay":"05/26","dayName":"火","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec17 復習(10分)\n② BBC⑨ 字幕ON 2回目+スクリプト(10分)\n③ 暗記文 昨夜1文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar in Use P1総復習(25分)\n⑥ Writing基礎: Problem-Solution型テンプレート暗記\n(A major issue...)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-27","dateDisplay":"05/27","dayName":"水","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec18 読み込み(10分)\n② BBC⑨ シャドーイング1回目(10分)\n③ 暗記文 昨夜2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader BBC記事×2本(25分)\n⑥ Writing基礎: 短文ライティング×1本\n(Udemy課題+Write&Improve試用)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-28","dateDisplay":"05/28","dayName":"木","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec18 復習(10分)\n② BBC⑨ シャドーイング2回目(10分)\n③ 暗記文 昨夜3文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Graded Reader BBC記事×2本(25分)\n⑥ Writing基礎: 短文ライティング×1本\n(Udemy課題+Write&Improve試用)(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-29","dateDisplay":"05/29","dayName":"金","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec17-18 総復習(10分)\n② BBC⑨ シャドーイング3回目(10分)\n③ 暗記文 昨夜4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Learning English ポッドキャスト聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Grammar+Reading 今週復習(25分)\n⑥ Writing 今週の振返り・整理(25分)\n⑦ Speaking Coach: Part1×3問+会話×1(20分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-05-30","dateDisplay":"05/30","dayName":"土","week":"Week 9 (P1: 基礎固め)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 次週分の先読み(15分)\n② 暗記文 昨夜5文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC追加×1本(30分)\n④ Grammar総復習(30分)\n⑤ Graded Reader 集中読書(40分)\n⑥ Writing モデルエッセイ分析×1本(30分)\n⑦ iTalki レッスン(25分)+復習(15分)","minutes":170},{"time":"午後 14:00-15:30","detail":"⑧ Speaking Coach: Part1×4問+会話×2(30分)\n⑨ 暗記文 W1-8分含む全5文総復習(25分)\n⑩ Writingテンプレート復習+来週計画(25分)","minutes":80}],"total":280},{"date":"2026-05-31","dateDisplay":"05/31","dayName":"日","week":"Week 9 (P1: 基礎固め)","isRest":true,"tasks":[],"total":0},{"date":"2026-06-01","dateDisplay":"06/01","dayName":"月","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec19 読み込み(10分)\n② BBC 6Min English 字幕なし初聴取(10分)\n③ 暗記文 前週分総復習(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Podcast 字幕なし聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Cambridge IELTS15 Reading Sec1演習(25分)\n⑥ Write&Improve + Task2 Opinion型×1本(30分)\n⑦ Speaking Coach: Part1×2+Part2×1(25分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規1-2文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-06-02","dateDisplay":"06/02","dayName":"火","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec20 読み込み(10分)\n② BBC スクリプト確認+2回目聴取(10分)\n③ 暗記文 昨夜1-2文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Podcast 字幕なし聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Cambridge IELTS15 Reading 演習・復習(25分)\n⑥ Write&Improve 短文添削練習(25分)\n⑦ Speaking Coach: Part1×2+Part2×1(30分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規3-4文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-06-03","dateDisplay":"06/03","dayName":"水","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec21 読み込み(10分)\n② BBC シャドーイング1-2回目(10分)\n③ 暗記文 昨夜3-4文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Podcast 字幕なし聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Cambridge IELTS15 Reading Sec2演習(25分)\n⑥ Udemy Writingコース Lecture視聴(30分)\n⑦ Speaking Coach: Part1×2+Part2×1(25分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規5文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-06-04","dateDisplay":"06/04","dayName":"木","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec22 復習(10分)\n② BBC シャドーイング3-4回目(10分)\n③ 暗記文 昨夜5文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Podcast 字幕なし聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Cambridge IELTS15 Reading Sec1演習(25分)\n⑥ Write&Improve + Task2 Opinion型×1本(30分)\n⑦ Speaking Coach: Part1×2+Part2×1(25分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規6文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-06-05","dateDisplay":"06/05","dayName":"金","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 6:30-7:00","detail":"① 語彙本 Sec19-22 総復習(10分)\n② BBC シャドーイング5回目仕上げ(10分)\n③ 暗記文 昨夜6文目 復習×3回(10分)","minutes":30},{"time":"通勤 8:00-8:20","detail":"④ BBC Podcast 字幕なし聴取(20分)","minutes":20},{"time":"夜 20:00-21:20","detail":"⑤ Cambridge IELTS15 Reading 演習・復習(25分)\n⑥ Write&Improve 短文添削練習(25分)\n⑦ Speaking Coach: Part1×2+Part2×1(30分)","minutes":80},{"time":"就寝前 22:00","detail":"⑧ 暗記文 新規7文目 暗記×5回(15分)","minutes":15}],"total":145},{"date":"2026-06-06","dateDisplay":"06/06","dayName":"土","week":"Week 10 (P2: 応用力構築)","isRest":false,"tasks":[{"time":"朝 8:00-8:30","detail":"① 語彙本 Sec23 先読み(15分)\n② 暗記文 昨夜7文目 復習×3回(15分)","minutes":30},{"time":"午前 9:00-11:30","detail":"③ BBC 追加×2本(40分)\n④ Cambridge IELTS15 Reading 演習(50分)\n⑤ Write&Improve + Task2×1本(30分)\n⑥ iTalki レッスン①②(50分)+復習(15分)","minutes":185},{"time":"午後 14:00-15:30","detail":"⑦ Speaking Coach: Part1+Part2+会話×2(30分)\n⑧ 暗記文 全7文 総復習(25分)\n⑨ 今週のWriting振返り+来週計画(25分)","minutes":80}],"total":295},{"date":"2026-06-07","dateDisplay":"06/07","dayName":"日","week":"Week 10 (P2: 応用力構築)","isRest":true,"tasks":[],"total":0}]
+;
+
+// === State with localStorage persistence ===
+let currentDayIndex = 0;
+let checkState = {};
+let touchStartX = 0;
+let touchStartY = 0;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('ielts_check_state');
+    if (saved) checkState = JSON.parse(saved);
+  } catch(e) { /* ignore */ }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('ielts_check_state', JSON.stringify(checkState));
+  } catch(e) { /* ignore */ }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function getToday() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + d;
+}
+
+function findTodayIndex() {
+  var today = getToday();
+  var idx = CALENDAR.findIndex(function(d) { return d.date === today; });
+  if (idx >= 0) return idx;
+  // If today is before calendar start, show first day
+  if (today < CALENDAR[0].date) return 0;
+  // If today is after calendar end, show last day
+  if (today > CALENDAR[CALENDAR.length - 1].date) return CALENDAR.length - 1;
+  // If today is in range but missing (shouldn't happen), find nearest
+  return 0;
+}
+
+function getTimeClass(timeStr) {
+  if (timeStr.indexOf('朝') >= 0) return 'morning';
+  if (timeStr.indexOf('通勤') >= 0) return 'commute';
+  if (timeStr.indexOf('夜') >= 0) return 'evening';
+  if (timeStr.indexOf('就寝前') >= 0) return 'bedtime';
+  if (timeStr.indexOf('午前') >= 0) return 'amblock';
+  if (timeStr.indexOf('午後') >= 0) return 'pmblock';
+  return 'morning';
+}
+
+function getTimeEmoji(timeStr) {
+  if (timeStr.indexOf('朝') >= 0) return '\u2600';
+  if (timeStr.indexOf('通勤') >= 0) return '\ud83d\ude83';
+  if (timeStr.indexOf('夜') >= 0) return '\ud83c\udf19';
+  if (timeStr.indexOf('就寝前') >= 0) return '\ud83d\udca4';
+  if (timeStr.indexOf('午前') >= 0) return '\u2615';
+  if (timeStr.indexOf('午後') >= 0) return '\ud83d\udcda';
+  return '\u23f0';
+}
+
+function splitTasks(detail) {
+  return detail.split('\n').filter(function(s) { return s.trim(); });
+}
+
+function getActiveDayNum(idx) {
+  var count = 0;
+  for (var i = 0; i <= idx; i++) {
+    if (!CALENDAR[i].isRest) count++;
+  }
+  return count;
+}
+
+function renderDay(idx) {
+  currentDayIndex = idx;
+  var day = CALENDAR[idx];
+  var container = document.getElementById('tasksContainer');
+  var isToday = day.date === getToday();
+
+  // Update nav
+  document.getElementById('dayDate').textContent = day.dateDisplay + ' (' + day.dayName + ')';
+  var activeDayNum = day.isRest ? '-' : getActiveDayNum(idx);
+  var totalActive = CALENDAR.filter(function(d) { return !d.isRest; }).length;
+  document.getElementById('dayLabel').textContent = day.week + (day.isRest ? ' - \u4f11\u606f\u65e5' : ' - Day ' + activeDayNum + '/' + totalActive);
+
+  // Today badge
+  var badge = document.getElementById('todayBadge');
+  if (isToday) {
+    badge.innerHTML = '<span class="today-badge">TODAY</span>';
+  } else {
+    badge.innerHTML = '';
+  }
+
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === CALENDAR.length - 1;
+
+  var dateEl = document.getElementById('dayDate');
+  dateEl.style.color = isToday ? '#e74c3c' : '#1F4E79';
+
+  // Hide swipe hint after first nav
+  document.getElementById('swipeHint').style.display = 'none';
+
+  if (day.isRest) {
+    container.innerHTML = '<div class="rest-card"><div class="emoji">\ud83d\udca4</div><h2>\u5b8c\u5168\u4f11\u606f\u65e5</h2><p>\u5916\u51fa\u30fb\u30ea\u30d5\u30ec\u30c3\u30b7\u30e5\u3057\u3066\u3001\u307e\u305f\u660e\u65e5\u304b\u3089\u9811\u5f35\u308a\u307e\u3057\u3087\u3046\uff01</p></div>';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressText').textContent = 'REST';
+    return;
+  }
+
+  // Count total subtasks and checked
+  var totalSubs = 0;
+  var checkedSubs = 0;
+  day.tasks.forEach(function(task, ti) {
+    splitTasks(task.detail).forEach(function(_, si) {
+      totalSubs++;
+      var key = day.date + '_' + ti + '_' + si;
+      if (checkState[key]) checkedSubs++;
+    });
+  });
+
+  var pct = totalSubs > 0 ? Math.round(checkedSubs / totalSubs * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = checkedSubs + '/' + totalSubs + ' (' + pct + '%)';
+
+  var html = '';
+  day.tasks.forEach(function(task, ti) {
+    var items = splitTasks(task.detail);
+    var allChecked = items.every(function(_, si) { return checkState[day.date + '_' + ti + '_' + si]; });
+
+    html += '<div class="task-card' + (allChecked ? ' completed' : '') + '">';
+    html += '<div class="task-header">';
+    html += '<span class="time-badge ' + getTimeClass(task.time) + '">' + getTimeEmoji(task.time) + ' ' + task.time + '</span>';
+    html += '<span class="task-minutes">' + task.minutes + '\u5206</span>';
+    html += '</div>';
+    html += '<div class="task-items">';
+
+    items.forEach(function(item, si) {
+      var key = day.date + '_' + ti + '_' + si;
+      var checked = checkState[key] || false;
+      html += '<div class="task-item">';
+      html += '<div class="checkbox' + (checked ? ' checked' : '') + '" data-key="' + key + '" data-idx="' + idx + '"></div>';
+      html += '<div class="task-text' + (checked ? ' done' : '') + '">' + escapeHtml(item) + '</div>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Event delegation for checkboxes
+document.addEventListener('click', function(e) {
+  var cb = e.target.closest('.checkbox');
+  if (cb && cb.dataset.key) {
+    var key = cb.dataset.key;
+    var idx = parseInt(cb.dataset.idx);
+    checkState[key] = !checkState[key];
+    saveState();
+    renderDay(idx);
+
+    // Check if all done for the day
+    var day = CALENDAR[idx];
+    var allDone = true;
+    day.tasks.forEach(function(task, ti) {
+      splitTasks(task.detail).forEach(function(_, si) {
+        if (!checkState[day.date + '_' + ti + '_' + si]) allDone = false;
+      });
+    });
+    if (allDone) showToast('\ud83c\udf89 \u4eca\u65e5\u306e\u30bf\u30b9\u30af\u5b8c\u4e86\uff01');
+  }
+});
+
+function navigate(delta) {
+  var newIdx = currentDayIndex + delta;
+  if (newIdx >= 0 && newIdx < CALENDAR.length) {
+    renderDay(newIdx);
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('todayView').style.display = tab === 'today' ? '' : 'none';
+  document.getElementById('weeklyView').style.display = tab === 'weekly' ? '' : 'none';
+  document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
+
+  var tabs = ['today', 'weekly', 'stats'];
+  document.querySelectorAll('.tab-bar button').forEach(function(btn, i) {
+    btn.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.bottom-nav button').forEach(function(btn, i) {
+    btn.classList.toggle('active', tabs[i] === tab);
+  });
+
+  if (tab === 'weekly') renderWeekly();
+  if (tab === 'stats') renderStats();
+}
+
+function renderWeekly() {
+  var container = document.getElementById('weeklyContainer');
+  var weekOrder = [];
+  var weeks = {};
+
+  CALENDAR.forEach(function(day, idx) {
+    var wk = day.week;
+    if (!weeks[wk]) {
+      weeks[wk] = [];
+      weekOrder.push(wk);
+    }
+    weeks[wk].push(Object.assign({}, day, {idx: idx}));
+  });
+
+  var today = getToday();
+  var html = '';
+
+  weekOrder.forEach(function(wk) {
+    var days = weeks[wk];
+    html += '<div class="week-group"><h3>' + wk + '</h3>';
+    html += '<div class="week-days">';
+
+    days.forEach(function(day) {
+      var cls = 'week-day';
+      if (day.isRest) cls += ' rest';
+      else if (day.dayName === '\u571f') cls += ' sat';
+      if (day.date === today) cls += ' today';
+
+      if (!day.isRest) {
+        var allDone = true;
+        var hasTasks = false;
+        day.tasks.forEach(function(task, ti) {
+          splitTasks(task.detail).forEach(function(_, si) {
+            hasTasks = true;
+            if (!checkState[day.date + '_' + ti + '_' + si]) allDone = false;
+          });
+        });
+        if (hasTasks && allDone) cls += ' all-done';
+      }
+
+      html += '<div class="' + cls + '" onclick="switchTab(\'today\');renderDay(' + day.idx + ')">';
+      html += '<div class="wd-date">' + day.dateDisplay + '</div>';
+      html += '<div class="wd-name">' + day.dayName + '</div>';
+
+      if (day.isRest) {
+        html += '<div class="wd-time">\ud83d\udca4</div>';
+      } else {
+        var h = Math.floor(day.total / 60);
+        var m = day.total % 60;
+        html += '<div class="wd-time">' + (h > 0 ? h + 'h' : '') + (m > 0 ? m + 'm' : '') + '</div>';
+
+        var done = 0, total = 0;
+        day.tasks.forEach(function(task, ti) {
+          splitTasks(task.detail).forEach(function(_, si) {
+            total++;
+            if (checkState[day.date + '_' + ti + '_' + si]) done++;
+          });
+        });
+        if (done > 0) {
+          html += '<div class="wd-check">' + done + '/' + total + '</div>';
+        }
+      }
+
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function renderStats() {
+  var container = document.getElementById('statsContainer');
+  var today = getToday();
+
+  var totalTasks = 0, doneTasks = 0, totalMinutes = 0, doneMinutes = 0;
+
+  CALENDAR.forEach(function(day) {
+    if (day.isRest) return;
+    day.tasks.forEach(function(task, ti) {
+      var items = splitTasks(task.detail);
+      var minutesPerItem = task.minutes / items.length;
+      items.forEach(function(_, si) {
+        totalTasks++;
+        totalMinutes += minutesPerItem;
+        var key = day.date + '_' + ti + '_' + si;
+        if (checkState[key]) {
+          doneTasks++;
+          doneMinutes += minutesPerItem;
+        }
+      });
+    });
+  });
+
+  var totalHours = Math.round(totalMinutes / 60);
+  var doneHours = Math.round(doneMinutes / 60);
+  var pct = totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0;
+
+  // Streak calculation
+  var streak = 0;
+  var todayIdx = findTodayIndex();
+  for (var i = todayIdx; i >= 0; i--) {
+    var d = CALENDAR[i];
+    if (d.isRest) continue;
+    var dayDone = true, hasTasks = false;
+    d.tasks.forEach(function(task, ti) {
+      splitTasks(task.detail).forEach(function(_, si) {
+        hasTasks = true;
+        if (!checkState[d.date + '_' + ti + '_' + si]) dayDone = false;
+      });
+    });
+    if (!hasTasks) break;
+    if (dayDone) streak++;
+    else break;
+  }
+
+  var html = '';
+
+  html += '<div class="stat-card"><div class="stat-value">' + pct + '%</div><div class="stat-label">\u5168\u4f53\u9054\u6210\u7387 (' + doneTasks + '/' + totalTasks + ' \u30bf\u30b9\u30af)</div>';
+  html += '<div style="margin-top:12px"><div class="progress-bar" style="height:12px"><div class="fill" style="width:' + pct + '%"></div></div></div></div>';
+
+  html += '<div class="stats-grid">';
+  html += '<div class="stat-card"><div class="stat-value">' + doneHours + '</div><div class="stat-label">\u5b66\u7fd2\u6642\u9593 (h) / ' + totalHours + 'h</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + streak + '</div><div class="stat-label">\u9023\u7d9a\u9054\u6210\u65e5\u6570</div></div>';
+  html += '</div>';
+
+  // Heatmap
+  html += '<div class="stat-card"><div style="font-weight:700;margin-bottom:12px;color:#1F4E79">\u5b66\u7fd2\u30d2\u30fc\u30c8\u30de\u30c3\u30d7</div>';
+  html += '<div class="streak-bar">';
+
+  CALENDAR.forEach(function(day) {
+    var cls = 'streak-dot';
+    if (day.isRest) { cls += ' rest'; }
+    else if (day.date === today) { cls += ' today'; }
+    else {
+      var allDone = true, hasTasks = false;
+      day.tasks.forEach(function(task, ti) {
+        splitTasks(task.detail).forEach(function(_, si) {
+          hasTasks = true;
+          if (!checkState[day.date + '_' + ti + '_' + si]) allDone = false;
+        });
+      });
+      if (hasTasks && allDone) cls += ' done';
+    }
+    html += '<div class="' + cls + '" title="' + day.dateDisplay + '(' + day.dayName + ')"></div>';
+  });
+
+  html += '</div></div>';
+
+  // Weekly breakdown
+  html += '<div class="stat-card"><div style="font-weight:700;margin-bottom:12px;color:#1F4E79">\u9031\u5225\u5b66\u7fd2\u6642\u9593</div>';
+  var weekOrder = [];
+  var weekTotals = {};
+  CALENDAR.forEach(function(d) {
+    if (!weekTotals[d.week]) {
+      weekTotals[d.week] = 0;
+      weekOrder.push(d.week);
+    }
+    weekTotals[d.week] += d.total;
+  });
+
+  weekOrder.forEach(function(wk) {
+    var mins = weekTotals[wk];
+    var h = (mins / 60).toFixed(1);
+    var maxH = 17;
+    var barPct = Math.min(100, (mins / 60 / maxH) * 100);
+    html += '<div style="display:flex;align-items:center;margin-bottom:6px;gap:8px">';
+    html += '<div style="width:40px;font-size:11px;font-weight:600;color:#7f8c8d">' + wk.replace(/Week (\d+).*/, 'W$1') + '</div>';
+    html += '<div style="flex:1;height:16px;background:#ecf0f1;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + barPct + '%;background:linear-gradient(90deg,#74b9ff,#0984e3);border-radius:4px"></div></div>';
+    html += '<div style="width:40px;font-size:11px;font-weight:600;text-align:right">' + h + 'h</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// === Swipe with Y-axis threshold ===
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', function(e) {
+  var dx = e.changedTouches[0].clientX - touchStartX;
+  var dy = e.changedTouches[0].clientY - touchStartY;
+  // Only trigger swipe if horizontal movement > 60px AND vertical < 40px
+  if (Math.abs(dx) > 60 && Math.abs(dy) < 40) {
+    if (dx > 0) navigate(-1);
+    else navigate(1);
+  }
+}, {passive: true});
+
+// === Initialize ===
+loadState();
+currentDayIndex = findTodayIndex();
+renderDay(currentDayIndex);
+
+// Update header subtitle
+var totalActive = CALENDAR.filter(function(d) { return !d.isRest; }).length;
+var totalRest = CALENDAR.filter(function(d) { return d.isRest; }).length;
+document.querySelector('.top-header .subtitle').textContent =
+  totalActive + '\u65e5\u7a3c\u50cd / ' + totalRest + '\u65e5\u4f11\u606f | 4/2\u301c6/7';
+
+// === PWA: Register Service Worker ===
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(function(reg) {
+    console.log('SW registered:', reg.scope);
+  }).catch(function(err) {
+    console.log('SW registration skipped:', err.message);
+  });
+}
+</script>
+</body>
+</html>

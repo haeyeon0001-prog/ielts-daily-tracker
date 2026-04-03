@@ -34,6 +34,12 @@
             color: var(--text);
             -webkit-user-select: none;
             user-select: none;
+        }
+
+        /* コンテンツ部分はテキスト選択可能に */
+        .tab-content {
+            -webkit-user-select: text;
+            user-select: text;
             -webkit-tap-highlight-color: transparent;
             position: fixed;
             overflow: hidden;
@@ -41,13 +47,13 @@
 
         body {
             padding-top: max(12px, env(safe-area-inset-top));
-            padding-bottom: 60px;
+            padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
         }
 
         /* Main container */
         .container {
             width: 100%;
-            height: calc(100vh - 60px - max(12px, env(safe-area-inset-top)));
+            height: calc(100vh - 60px - max(12px, env(safe-area-inset-top)) - env(safe-area-inset-bottom, 0px));
             position: relative;
             overflow: hidden;
         }
@@ -59,7 +65,7 @@
             height: 100%;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 20px;
+            padding-bottom: 40px;
             animation: slideIn 0.3s ease-out;
         }
 
@@ -101,6 +107,8 @@
             transition: all 0.2s ease;
             border-top: 3px solid transparent;
             padding: 8px 4px;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .nav-item.active {
@@ -338,6 +346,8 @@
             color: #999999;
             transition: all 0.2s ease;
             white-space: nowrap;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .sub-tab.active {
@@ -377,6 +387,8 @@
             transition: all 0.2s ease;
             margin-bottom: 8px;
             width: 100%;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .btn-primary {

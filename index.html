@@ -451,6 +451,34 @@
         ::-webkit-scrollbar-thumb:active {
             background: #999999;
         }
+
+        /* Word tooltip */
+        .word-tooltip {
+            position: fixed;
+            background: #333;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            pointer-events: none;
+            max-width: 260px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .word-tooltip.visible {
+            opacity: 1;
+        }
+        .word-tooltip .wt-word {
+            font-weight: 700;
+            color: #FFD54F;
+            margin-right: 6px;
+        }
+        .word-tooltip .wt-meaning {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -540,6 +568,143 @@
     </nav>
 
     <script>
+
+        // ====================================================================
+        // WORD DICTIONARY & TOOLTIP
+        // ====================================================================
+
+        const WORD_DICT = {"abandon":"放棄する","ability":"能力","able":"できる","abolish":"廃止する","absence":"欠席、不在","absolute":"絶対的な","absolutely":"絶対に","abstract":"抽象的な","abundance":"豊富","abundant":"豊富な","abuse":"虐待する、悪用する","accelerate":"加速する","acceleration":"加速","accent":"アクセント","accept":"受け入れる","acceptable":"受け入れられる","acceptance":"受け入れ","access":"アクセス、利用","accessible":"利用可能な","accident":"事故","accidental":"偶然の","accidentally":"偶然に","accommodate":"対応する、泊める","accommodation":"宿泊施設","accompany":"同行する","accomplish":"成し遂げる","accomplishment":"達成","accord":"合意","accordance":"調和","accordingly":"したがって","account":"説明、口座","accountable":"説明責任のある","accumulate":"蓄積する","accumulation":"蓄積","accuracy":"正確性","accurate":"正確な","accurately":"正確に","accusation":"非難","accuse":"非難する","accustomed":"慣れた","achievable":"達成可能な","achieve":"達成する","achievement":"達成","acid":"酸","acknowledge":"認める","acknowledgement":"認識","acquire":"獲得する","acquisition":"獲得","acre":"エーカー","act":"行動する","action":"行動","activate":"起動する","activation":"起動","active":"活動的な","actively":"積極的に","activity":"活動","actor":"俳優","actual":"実際の","actually":"実は","acute":"急性の、深刻な","adapt":"適応する","adaptable":"適応可能な","adaptation":"適応","add":"加える","addition":"追加","additional":"追加の","additionally":"さらに","address":"住所、取り組む","adequate":"適切な","adequately":"適切に","adjacent":"隣接した","adjust":"調整する","adjustable":"調整可能な","adjustment":"調整","administer":"管理する","administration":"管理、行政","administrative":"管理上の","administrator":"管理者","admirable":"称賛すべき","admiration":"賞賛","admire":"称賛する","admission":"入場、認定","admit":"認める、入場を許可する","adolescence":"思春期","adolescent":"思春期の","adopt":"採用する","adoption":"採用","adoptive":"養子の","adore":"愛する","adorn":"飾る","adornment":"装飾","adult":"大人","adulthood":"成人期","advance":"進む、前払い","advanced":"先進的な","advancement":"進歩","advantage":"利点","advantageous":"有利な","advent":"到来","adventure":"冒険","adventurous":"冒険心の強い","adverb":"副詞","adversary":"敵","adverse":"悪い、逆風の","adversity":"逆境","advertise":"宣伝する","advertisement":"広告","advertising":"広告、宣伝","advice":"助言","advisable":"推奨される","advise":"助言する","adviser":"アドバイザー","advisor":"顧問","advisory":"勧告的な","advocacy":"擁護","advocate":"擁護する、弁護士","aerial":"航空の","aerobic":"有酸素の","aeronautics":"航空学","aerospace":"航空宇宙","affair":"事件、事柄","affect":"影響する","affectation":"気取り","affected":"気取った","affection":"愛情","affectionate":"優しい","affidavit":"宣誓証書","affiliate":"関連会社","affiliation":"所属","affinity":"親和性","affirm":"確認する","affirmation":"肯定","affirmative":"肯定的な","afflict":"悩ませる","affliction":"苦しみ","affluence":"豊かさ","affluent":"裕福な","afford":"余裕がある","affordable":"手頃な","afloat":"浮かぶ","afraid":"怖い","afresh":"新たに","african":"アフリカの","after":"後で","aftermath":"余波","afternoon":"午後","afterward":"その後","afterwards":"その後","again":"もう一度","against":"反対に、～に対して","age":"年齢","aged":"老いた","agency":"機関","agenda":"議題","agent":"仲介人、代理人","aggravate":"悪化させる","aggravation":"悪化","aggregate":"集計する、総計","aggregation":"集計","aggression":"攻撃","aggressive":"積極的な、攻撃的な","aggressively":"攻撃的に","aggressor":"攻撃者","agile":"素早い","agility":"機敏性","agitate":"動揺させる","agitation":"動揺","agitator":"扇動者","ago":"前","agony":"苦しみ","agrarian":"農業の","agree":"同意する","agreeable":"気持ちよい","agreed":"合意した","agreement":"合意","agricultural":"農業の","agriculture":"農業","agronomy":"農学","aground":"座礁した","ahead":"前方に","aid":"援助","aide":"補佐官","ailment":"病気","aim":"狙う、目的","aimless":"目的のない","air":"空気","airborne":"空輸の","aircraft":"航空機","airline":"航空会社","airplane":"飛行機","airport":"空港","airtight":"気密の","airy":"通気性のある","aisle":"通路","ajar":"半開きの","akin":"関連した","alarm":"警報","alarming":"驚くべき","alarmingly":"驚くほど","alas":"悲しいかな","albeit":"とはいえ","album":"アルバム","alcohol":"アルコール","alcoholic":"アルコール性の","alcoholism":"アルコール中毒","alert":"警戒する、警戒した","alertly":"警戒して","alertness":"警戒","algebra":"代数","algebraic":"代数的な","algorithm":"アルゴリズム","alias":"別名","alibi":"アリバイ","alien":"異質な","alienate":"疎遠にする","alienation":"疎外","alight":"降りる","align":"一列に並ぶ","alignment":"配置","alike":"似ている","alimentary":"食料の","alive":"生きている","alkali":"アルカリ","alkaline":"アルカリ性の","all":"全部","allay":"静める","allege":"主張する","allegedly":"主張されているように","allegiance":"忠誠","allegory":"寓話","alleviate":"緩和する","alleviation":"軽減","alley":"路地","alleyway":"路地","alliance":"同盟","allied":"提携した","alliteration":"頭韻","allocate":"配分する","allocation":"配分","allot":"配分する","allotment":"小地所","allow":"許可する","allowable":"許可される","allowance":"手当て","alloy":"合金","allude":"暗に言う","allure":"魅力","alluring":"魅力的な","allusion":"暗に言うこと","ally":"同盟国","almanac":"暦","almighty":"全能の","almond":"アーモンド","almost":"ほぼ","alms":"寄付","aloft":"上空に","alone":"一人で","along":"沿って","alongside":"傍らに","aloof":"冷淡な","aloofness":"冷たさ","aloud":"声を出して","alphabet":"アルファベット","alphabetical":"アルファベット順の","alphabetically":"アルファベット順に","alpine":"アルプスの","already":"すでに","also":"また","altar":"祭壇","alter":"変える","alteration":"変更","altercation":"口論","alternate":"交互に","alternation":"交替","alternative":"選択肢","alternatively":"または","although":"にもかかわらず","altitude":"高度","alto":"アルト","altogether":"全く","altruism":"利他主義","altruistic":"利他的な","aluminum":"アルミニウム","alumna":"女性卒業生","alumnus":"男性卒業生","always":"いつも","am":"である","amass":"蓄積する","amateur":"アマチュア","amateurish":"素人じみた","amatory":"恋愛の","amaze":"驚かせる","amazement":"驚き","amazing":"驚くべき","amazingly":"驚くほど","amazon":"女戦士","ambassador":"大使","amber":"琥珀色","ambiance":"雰囲気","ambidextrous":"両利きの","ambience":"雰囲気","ambiguity":"曖昧さ","ambiguous":"曖昧な","ambiguously":"曖昧に","ambition":"野心","ambitious":"野心的な","ambivalence":"両価性","ambivalent":"両価的な","amble":"のんびり歩く","ambulance":"救急車","ambulatory":"歩行できる","ambush":"待ち伏せ","ameliorate":"改善する","amelioration":"改善","amen":"アーメン","amenable":"従順な","amend":"改正する","amendment":"改正","amends":"賠償","amenity":"快適さ","america":"アメリカ","american":"アメリカの","amethyst":"アメジスト","amiability":"愛想の良さ","amiable":"愛想の良い","amiably":"友好的に","amicable":"友好的な","amicably":"友好的に","amid":"～の中に","amidst":"～の中に","amiss":"悪い","amity":"友情","ammonia":"アンモニア","ammonium":"アンモニウム","ammunition":"弾薬","amnesia":"健忘症","amnesty":"恩赦","amoeba":"アメーバ","among":"～の中に","amongst":"～の中に","amoral":"非道徳的な","amorality":"非道徳性","amorous":"恋愛的な","amorously":"恋愛的に","amorphous":"無定形の","ampere":"アンペア","ampersand":"アンパーサンド","amphibian":"両生類","amphibious":"両生の","amphitheater":"円形劇場","ample":"十分な","amplification":"拡大","amplifier":"アンプ","amplify":"拡大する","amplitude":"振幅","amply":"十分に","amputate":"切断する","amputation":"切断","amputee":"切断者","amuse":"楽しませる","amusement":"娯楽","amusing":"面白い","amusingly":"面白く","an":"一つの","anachronism":"時代錯誤","anachronistic":"時代錯誤の","anaconda":"アナコンダ","anagram":"アナグラム","anal":"肛門の","analgesia":"無痛症","analgesic":"鎮痛剤","analogous":"類似した","analogously":"類似して","analogue":"類似物","analogy":"類似","analyse":"分析する","analysis":"分析","analyst":"分析家","analytic":"分析的な","analytical":"分析的な","analytically":"分析的に","analyze":"分析する","anarchic":"無政府的な","anarchism":"アナーキズム","anarchist":"無政府主義者","anarchistic":"無政府主義的な","anarchy":"無政府状態","anathema":"呪い","anatomical":"解剖学的な","anatomically":"解剖学的に","anatomist":"解剖学者","anatomy":"解剖学","ancestor":"祖先","ancestral":"祖先の","ancestry":"血筋","anchor":"錨","anchorage":"錨地","anchorman":"アンカーマン","anchovy":"アンチョビー","ancient":"古代の","anciently":"昔から","ancillary":"補助的な","and":"と","andante":"アンダンテ","andiron":"暖炉の足","androgynous":"両性具有の","anew":"新たに","angel":"天使","angelic":"天使のような","angelica":"アンジェリカ","angelically":"天使的に","anger":"怒り","angered":"怒った","angina":"狭心症","angiosperm":"被子植物","angle":"角度","angler":"釣り人","anglesite":"硫酸塩鉱物","angleworm":"ミミズ","anglican":"英国国教会の","anglicanism":"英国国教会","anglicize":"英国化する","angling":"釣り","anglophile":"イギリス好き","anglophobe":"イギリス嫌い","angora":"アンゴラ","angostura":"アンゴスチュラ","angry":"怒った","angst":"不安","angstrom":"オングストローム","anguish":"苦悶","anguished":"苦しんでいる","angular":"角張った","angularity":"角張り","anil":"インドゴ","aniline":"アニリン","anima":"命","animal":"動物","animalism":"動物性","animality":"動物性","animate":"生気を与える","animated":"生き生きした","animatedly":"生き生きして","animation":"生気","animator":"アニメーター","animism":"精霊信仰","animistic":"精霊信仰の","animosity":"敵意","anion":"陰イオン","anise":"アニス","aniseed":"アニスの実","anisette":"アニセット","anisotropy":"異方性","ankle":"足首","anklet":"足首の飾り","ankus":"象棍","annal":"年代記","annals":"年代記","anneal":"焼きなましする","annealing":"焼きなまし","annelid":"環形動物","annex":"併合する","annexation":"併合","annexe":"別棟","annihilate":"滅ぼす","annihilation":"滅ぼすこと","anniversary":"記念日","annotate":"注釈を付ける","annotation":"注釈","announce":"発表する","announcement":"発表","announcer":"アナウンサー","annoy":"いらいらさせる","annoyance":"いらいら","annoyed":"いらいらした","annoying":"いらいらさせる","annoyingly":"うるさく","annual":"年間の","annually":"毎年","annuity":"年金","annul":"廃止する","annular":"環状の","annulate":"環のある","annulment":"無効","anode":"陽極","anodize":"アノード処理する","anodyne":"鎮痛剤","anoint":"塗油する","anomalies":"異常","anomalous":"異常な","anomalously":"異常に","anomaly":"異常","anon":"すぐに","anonymity":"匿名性","anonymous":"匿名の","anonymously":"匿名で","anopheles":"蚊","anorak":"アノラック","another":"別の","answer":"答え","answerable":"答える責任がある","answering":"応答する","ant":"蟻","antacid":"制酸剤","antagonism":"敵意","antagonist":"敵","antagonistic":"敵対的な","antagonistically":"敵対的に","antagonize":"敵にする","antarctic":"南極の","ante":"掛け金","anteater":"アリクイ","antebellum":"戦前の","antecedence":"先行","antecedent":"先行するもの","antecedently":"先に","antechamber":"前室","antedate":"遡る","antediluvian":"大洪水前の","antelope":"レイヨウ","antenatal":"出生前の","antenna":"アンテナ","antennae":"アンテナ","antenuptial":"結婚前の","anterior":"前の","anteriorly":"前に","anteroom":"前室","anthem":"賛美歌","anther":"葯","anthesis":"開花","anthills":"蟻塚","anthology":"選集","anthozoan":"花虫類","anthracene":"アントラセン","anthracite":"無煙炭","anthrax":"炭疽病","anthropic":"人間の","anthropocentric":"人間中心的な","anthropocentrism":"人間中心主義","anthropoid":"人間似た","anthropology":"人類学","anthropomorphic":"擬人化した","anthropomorphism":"擬人化","anthropomorphize":"擬人化する","anthroposophy":"人知学","anti":"反対","antiacid":"制酸剤","antialcohol":"禁酒の","antialcoholic":"禁酒主義者","antialien":"反外国人の","antiallergen":"抗アレルゲン","antiallergenic":"抗アレルギー性の","antiamaranthine":"永遠ではない","antiamedment":"修正案反対","antiamenable":"非準拠的な","antiameric":"反米的","antiamerica":"反米","antiamerican":"反米主義者","antiamericanism":"反米主義","antiamericanist":"反米主義者","antiamericanize":"反米化する","antiamiable":"不愛想な","antiamiableness":"不愛想さ","antiamiably":"不愛想に","antiampere":"反アンペア","antiamphibious":"両生性のない","antiamphibiousness":"両生性の欠如","antiamphora":"反アンフォラ","antiamphoric":"反アンフォラ的","antiamphory":"反アンフォラ音","antiamphoteric":"反両性的","antiamphoterical":"反両性的な","antiampulla":"反瓶状体","antiampullaceous":"反球形","antifaction":"反派閥","antifactional":"反派閥的な","antifactionalism":"反派閥主義","antifactionalist":"反派閥主義者","antifactious":"反派閥的な","antifactiously":"反派閥的に","antifactiousness":"反派閥性","antifactual":"反事実的","antifactuality":"反事実性","antifactually":"反事実的に","antifactum":"反事実","antifacundity":"反多産性","antifade":"褪色防止","antifading":"褪色防止","antifail":"反故障","antifailed":"反故障的","antifailure":"反故障","gain":"得る、利益","gap":"隔たり、格差","gas":"ガス、燃料","gather":"集める、集まる","gauge":"測定する、計る","gene":"遺伝子","general":"一般的な、将軍","generate":"生成する、発生させる","generation":"世代、発生","genetic":"遺伝の、遺伝子の","genome":"ゲノム","gentle":"優しい、穏やかな","genuine":"本物の、真正な","gesture":"身振り、ジェスチャー","giant":"巨人、巨大な","gift":"贈り物、才能","global":"世界的な","globalization":"グローバル化","globe":"地球、球体","goal":"目標","golden":"金色の、黄金の","govern":"支配する、統治する","governance":"統治、ガバナンス","government":"政府","governor":"知事、支配者","grab":"つかむ、掴む","grace":"優雅さ、恵み","graceful":"優雅な、しなやかな","grade":"成績、等級","gradual":"段階的な、徐々の","gradually":"徐々に","graduate":"卒業する、卒業生","graduation":"卒業、修了","grain":"穀物、粒","grammar":"文法、文章","grand":"壮大な、素晴らしい","grant":"助成金、与える","graph":"グラフ","graphic":"グラフィックの、図形の","grasp":"つかむ、理解する","grass":"草、芝生","grateful":"感謝している、ありがたい","gratitude":"感謝、謝意","grave":"墓、深刻な","gravity":"重力","great":"大きな、素晴らしい","greatest":"最高の、最大の","greatly":"大いに、非常に","greed":"貪欲さ、欲望","greedy":"貪欲な、欲張りな","green":"緑、環境に優しい","greenhouse":"温室","greet":"挨拶する、迎える","greeting":"挨拶、挨拶文","grid":"格子、グリッド","grief":"悲しみ、悲嘆","grievance":"不満、苦情","grieve":"悲しむ、嘆く","gross":"総計の、粗い","ground":"地面、根拠","grounds":"根拠、敷地","groundwater":"地下水","group":"グループ、集団","grow":"成長する、育つ","growing":"成長する、増加する","growth":"成長、増加","guarantee":"保証する","guard":"警備する、警備員","guardian":"保護者、後見人","guidance":"指導、ガイダンス","guide":"案内する","guideline":"ガイドライン、指針","guilt":"罪悪感、有罪","guilty":"有罪の、罪悪感を感じる","habit":"習慣、癖","habitat":"生息地、生活領域","habitual":"習慣的な、常軛的な","hack":"切る、ハッキングする","halt":"止める、停止","hammer":"ハンマー、金槌","hamper":"妨げる、バスケット","hand":"手、与える","handbook":"ハンドブック、手引書","handle":"扱う、取っ手","handler":"扱う人、ハンドラー","handmade":"手作りの","handy":"便利な、手近な","hang":"掛ける、吊る","happen":"起こる、偶然起こる","happening":"出来事、事件","happily":"幸せに、幸いにも","happiness":"幸福、幸せ","happy":"幸せな、喜んで","harbor":"港、抱く","hard":"硬い、難しい","hardly":"ほとんど～ない、かろうじて","hardship":"苦難、困難","hardware":"ハードウェア、金物","hardy":"丈夫な、耐性のある","harm":"害、傷つける","harmful":"有害な、害をもたらす","harmless":"無害な、害のない","harmony":"調和、一致","harness":"利用する、馬具","harsh":"厳しい、耳障りな","harvest":"収穫、刈り取る","haste":"急ぎ、急速","hasten":"急ぐ、急がせる","hastily":"せっかちに、急いで","hasty":"せっかちな、急速な","hatchery":"孵化場、養殖場","hate":"嫌う、憎む","hateful":"憎らしい、嫌悪できる","hatred":"憎悪、嫌悪","haul":"引っ張る、運送","haunt":"幽霊が出る、悩ます","haunted":"幽霊が出ている、悩んでいる","havoc":"大混乱、破壊","hazard":"危険、危ない物質","hazardous":"危険な、有害な","head":"頭、長、率いる","headache":"頭痛","heading":"見出し、方向","headline":"見出し、ニュース","headquarters":"本部、本社","heal":"治す、治る","healer":"治療者、治す人","health":"健康、衛生","healthy":"健康な、健全な","heap":"積み重ねる、山積み","hear":"聞く、聞こえる","hearing":"聴覚、公開審問","heart":"心、心臓","heartbeat":"心拍、鼓動","heartfelt":"心からの、誠心誠意の","heartily":"心から、心地よく","hearty":"心からの、満腹の","heat":"熱、暖める","heated":"熱い、激しい","heater":"暖房、ヒーター","heating":"暖房、加熱","heaven":"天国、天","heavenly":"天国のような、素晴らしい","heavily":"重く、大いに","heaviness":"重さ、沈痛さ","heavy":"重い、重大な","hedge":"生け垣、避ける","heed":"注意を払う、聞き入れる","height":"高さ、身長","heighten":"高める、増す","heir":"相続人、跡継ぎ","helicopter":"ヘリコプター、ヘリ","hell":"地獄、ひどい所","helmet":"ヘルメット、兜","help":"助ける、助け","helper":"助手、手助けする人","helpful":"役立つ、親切な","helpless":"無力な、助けられない","hemisphere":"半球、半球部","herb":"薬草、ハーブ","herbal":"ハーブの、薬草の","herd":"群れ、群がる","here":"ここに、この場所","hereafter":"今後、来世","hereby":"これにより、これを以て","hereditary":"遺伝性の、世襲の","heredity":"遺伝、遺伝性","heresy":"異端、異説","heritage":"遺産、文化遺産","hermit":"隠者、世捨て人","hero":"英雄、主人公","heroic":"英雄的な、勇敢な","heroics":"英雄的行為","heroine":"女性主人公、女英雄","herring":"ニシン","hesitant":"ためらう、躊躇する","hesitate":"躊躇する、ためらう","hesitation":"躊躇、ためらい","heterogeneous":"異種の、異なった","hexagon":"六角形、ヘキサゴン","hiccup":"しゃっくり","hidden":"隠された、秘密の","hide":"隠す、隠れる","hideous":"醜い、ひどい","hierarchy":"階層、ヒエラルキー","high":"高い、高度の","higher":"より高い、高等の","highest":"最高の、最も高い","highland":"高地、山地","highlands":"高地、山地","highlight":"強調する、ハイライト","highly":"非常に、高く","highway":"幹線道路、ハイウェイ","hijack":"乗っ取る、横取りする","hijacker":"乗っ取り犯","hike":"ハイキング、値上げ","hiker":"ハイカー、ハイキング者","hiking":"ハイキング","hilarious":"非常に面白い、陽気な","hill":"丘、小高い場所","hillside":"丘の側面、山腹","hilltop":"丘の頂上","hilly":"丘の多い、波状の","hinder":"妨げる、邪魔をする","hindrance":"障害、妨げ","hindsight":"後知恵、事後の判断","hinge":"蝶番、かかっている","hint":"ほのめかす、ヒント","hinterland":"奥地、背後地","hip":"腰、流行の","hippopotamus":"カバ","hippy":"ヒッピー","hire":"雇う、借りる","hiring":"雇用、採用","his":"彼の","hispanic":"スペイン系の、ラテン系","hiss":"シーッと言う、シーシー音","historian":"歴史家","historic":"歴史的な、著名な","historical":"歴史の、歴史的な","historically":"歴史的に、史的に","history":"歴史、経歴","hit":"打つ、ヒット","hitch":"繋ぐ、障害","hitchhike":"ヒッチハイクをする","hitchhiker":"ヒッチハイカー","hither":"ここへ、こちらに","hitherto":"これまで、今までのところ","hoax":"いたずら、でっちあげ","hobby":"趣味、嗜好","hockey":"ホッケー","hoe":"鍬、耕す","hog":"豚、占有する","hoist":"持ち上げる、巻き上げ機","hold":"持つ、保つ","holder":"保有者、容器","holding":"所有地、保有","holdings":"保有物、資産","hole":"穴、洞穴","holiday":"祝日、休日","hollow":"中が空の、偽りの","hollowly":"中身のなく、空々しく","holly":"ヒイラギ、西洋ひいらぎ","hollywood":"ハリウッド","holocaust":"大虐殺、全滅","hologram":"ホログラム","holster":"ホルスター、銃ホルスター","holy":"聖い、神聖な","homage":"敬意、忠誠","home":"家、家庭","homecoming":"帰宅、凱旋","homegrown":"国産の、地元産の","homeland":"祖国、故郷","homeless":"家のない、浮浪者","homely":"普通の、醜い","homemade":"手作りの、家庭で作った","homemaker":"主婦、専業主婦","homeowner":"家の所有者、住宅所有者","homeschool":"自宅学習、ホームスクール","homesick":"郷愁の、ホームシックの","homesickness":"郷愁、ホームシック","homestead":"農場、耕作地","homeward":"家へ向かって","homewards":"家へ向かって","homework":"宿題、家での仕事","homey":"家庭的な、親しみやすい","homicidal":"殺人的な","homicide":"殺人、殺人犯","homily":"説教、訓話","homing":"帰路につく、ホーミング","homogeneous":"均一の、同種の","homogenously":"均一に、同じように","homonym":"同音異義語、同綴異義語","homosexual":"同性愛の、同性愛者","homosexuality":"同性愛","hone":"磨く、研ぐ","honest":"正直な、誠実な","honestly":"正直に、誠実に","honesty":"正直さ、誠実さ","honey":"蜂蜜、親愛なる","honeybee":"ミツバチ","honeycomb":"蜂の巣、蜂巣状","honeydew":"蜜露、ハニーデュー","honeyed":"蜂蜜で甘くした、優しい","honeymoon":"蜜月、新婚旅行","honeysuckle":"スイカズラ、ハニーサックル","honk":"ガチョウの声、クラクション","honker":"ガチョウ、大きなもの","honor":"名誉、敬う","honorable":"名誉ある、敬うべき","honorably":"名誉的に、敬うべく","honorary":"名誉の、非常勤の","honored":"名誉を受けた、敬われた","honoree":"受賞者、敬われた人","honorific":"敬語の、敬語","hood":"フード、悪漢","hooded":"フード付きの、顔が隠された","hoodwink":"だます、ぺてんにかける","hoof":"蹄、足","hoofed":"蹄のある","hook":"かぎ、引っかける","hooked":"曲がった、夢中になった","hooker":"フーカー、娼婦","hookup":"接続、つながり","hookworm":"鉤虫、線虫","hooky":"無断欠席","hooligan":"チンピラ、不良","hooliganism":"チンピラ行為、不良行為","hoop":"輪、フープ","hoopla":"大騒ぎ、ふし","hoot":"ふくろうの鳴き声、笑い","hooter":"ホーン、汽笛","hooting":"ふくろうの鳴く音","hoover":"掃除機、吸い込む","hooves":"蹄、足","hop":"跳ぶ、ホップ","hope":"望む、希望","hopeful":"希望に満ちた、有望な","hopefully":"希望を持って、幸いにも","hopeless":"絶望的な、希望のない","hopelessly":"絶望的に、希望なく","hopelessness":"絶望、希望のなさ","hopscotch":"けんけんぱ","horizon":"地平線、地平","horizontal":"水平の、横の","horizontally":"水平に、横に","hormonal":"ホルモンの","hormone":"ホルモン","horn":"角、ホルン","horned":"角のある","hornet":"スズメバチ","horny":"角質の、淫らな","horoscope":"占星術の予言、運勢","horrendous":"ひどい、可怕い","horrible":"ひどい、恐ろしい","horribly":"ひどく、恐ろしく","horrid":"ひどい、嫌悪すべき","horridly":"ひどく、不快に","horrific":"ぞっとするような、悍ましい","horrified":"ぞっとした","horrify":"ぞっとさせる、恐れさせる","horrifying":"恐ろしい、ぞっとするような","horror":"恐怖、ぞっとするもの","horse":"馬、馬単位","horseback":"馬の背、馬上","horsed":"馬を備えた","horsefly":"アブ、馬虻","horsehair":"馬の毛","horselaugh":"けたけた笑い","horseless":"馬のない、馬力ない","horseplay":"ふざけ、粗暴な遊び","horsepower":"馬力","horseradish":"西洋わさび","horseshoe":"馬蹄鉄、蹄鉄","horsewhip":"馬のむち、むちで打つ","horsewoman":"女性馬術家、女性騎馬者","horsey":"馬に関する、馬好きな","horsy":"馬に関する、馬好きな","horticultural":"園芸の","horticulture":"園芸、園芸学","horticulturist":"園芸家","hosanna":"ホサナ、万歳","hose":"ホース、靴下","hosed":"ホースで水をまいた","hosel":"ゴルフクラブの穴","hosepipe":"ホースパイプ","hosier":"靴下商人","hosiery":"靴下、ストッキング","hospice":"ホスピス、終末期医療施設","hospitable":"ホスピタリティのある、歓迎的な","hospitably":"ホスピタリティをもって","hospital":"病院","hospitality":"ホスピタリティ、もてなし","hospitalization":"入院、入院治療","hospitalize":"入院させる、入院させ治療する","hospitalized":"入院した","host":"ホスト、主人","hostage":"人質","hosted":"ホストをした","hostel":"ホステル、簡易宿泊所","hosteler":"ホステル宿泊者","hosteling":"ホステル宿泊","hostelry":"宿屋、旅館","hostess":"女性ホスト、ホステス","hostile":"敵対的な、敵の","hostilely":"敵対的に","hostiles":"敵、敵対者","hostility":"敵対心、敵意","hosting":"ホスト、主催","hot":"熱い、熱烈な","hotbed":"温床、根拠地","hotcake":"ホットケーキ、パンケーキ","hotdog":"ホットドッグ、熱狂的支持者","hotel":"ホテル","hotelier":"ホテル経営者","hothead":"気の短い人、短気な人","hotheaded":"気が短い、血の気が多い","hotheadedly":"気が短く、血の気多く","hotheadedness":"気の短さ、短気","hothouse":"温室、熱帯植物室","hotline":"ホットライン、直通電話","hotly":"熱く、激しく","hotness":"熱さ、ホットさ","hotter":"より熱い","hottest":"最も熱い","hottie":"魅力的な人","hound":"猟犬、追跡する","hounded":"執拗に追求された","hounding":"執拗な追求","hour":"時間、一時間","hourglass":"砂時計","hourly":"毎時間の、毎時間","hours":"時間、営業時間","house":"家、家族","houseboat":"ハウスボート、水上生活船","housebound":"家に縛られた","housebreak":"家畜を訓練する","housebreaker":"空き家荒らし、泥棒","housebreaking":"空き家荒らし","housebroken":"訓練された、家事ができた","housebuilder":"家屋建設業者","housebuilding":"家屋建設","housecat":"家ネコ","housecoat":"ハウスコート、家着","housefather":"ハウスファーザー","housefly":"イエバエ","household":"家庭、世帯","householder":"家主、世帯主","househusband":"主夫","housekeeper":"家政婦、家事担当者","housekeeping":"家政、家事","houseleek":"アロエ、ベンケイソウ","houseless":"家のない、浮浪の","houselight":"劇場の照明","houseling":"家族の一員","housemaid":"女中、家事使用人","houseman":"男の家事使用人","housemartin":"イエスワロー、家つばめ","housemistress":"ハウス監督","housemother":"ハウスマザー","houseparent":"寮の親","houseplant":"室内観葉植物","houseproud":"家を誇りに思う","houser":"家建設者","houseroommate":"ルームメート","houseservice":"家事サービス","housesitter":"ハウスシッター、家番人","housetop":"屋根、家の頂上","houseware":"家庭用品","housewares":"台所用品","housewarming":"新居祝い","housewife":"主婦","housewifely":"主婦らしい","housework":"家事","housewrecker":"建物解体業者","housing":"住宅、ハウジング","hovel":"掘っ立て小屋、粗末な家","hover":"浮かぶ、ぐずぐずしている","hovercraft":"ホバークラフト","hovering":"浮かんでいる、ぐずぐずしている","hoveringly":"浮かぶように、ぐずぐず","how":"どのように、方法","howbeit":"しかしながら、とはいえ","howdah":"象の背の座席","howe":"丘、古墳","however":"しかしながら、しかし","howitzer":"榴弾砲、ハウィッツァー","howl":"吠える、うめく","howled":"吠えた","howler":"吠える動物、滑稽な誤り","howling":"吠えている、激しい","howlingly":"激しく、ひどく","hows":"方法、理由","howsoever":"どのようであろうとも","hoy":"おい、舟人の掛け声","hoya":"ホヤ、球蘭","hoyden":"やんちゃな娘","hoydenish":"やんちゃな","hoydenishly":"やんちゃに","hoydenism":"やんちゃさ","hub":"ハブ、車輪の中心","hubbub":"大騒ぎ、混乱","hubby":"夫、だんな","hubcap":"ハブキャップ","hubris":"傲慢さ、傲慢","huckaback":"厚手の綿布","huckleberry":"ハックルベリー、ビルベリー","huckster":"行商人、いかさま師","hucksterdom":"行商人の世界","huckstering":"行商人の商売","hucksterly":"いかさま的な","hucksterman":"行商人","hucksterwoman":"女行商人","huddle":"抱き合う、密集する","huddled":"抱き合った、密集した","huddling":"抱き合い、密集","hue":"色合い、色","hued":"色合いを持った","huff":"怒って息を吹く、不機嫌さ","huffed":"怒って息を吹いた","huffily":"不機嫌に、怒って","huffiness":"不機嫌さ、怒り","huffing":"怒って息を吹く","huffish":"不機嫌な、怒りっぽい","huffy":"不機嫌な、怒りっぽい","hug":"抱きしめる、抱擁","huge":"巨大な、莫大な","hugely":"巨大に、莫大に","hugeness":"巨大さ、莫大さ","huggable":"抱きしめたい、抱きやすい","hugged":"抱きしめた","hugger":"抱き合う人","huggily":"抱きしめるように","hugging":"抱きしめ","huggish":"抱きしめるような","huggy":"抱きしめるのが好きな","hugs":"抱き合い","huguenot":"ユグノー教徒","huguenotic":"ユグノー教徒の","huh":"え、えっ","hui":"ニュージーランド先住民クラブ","huia":"ニュージーランド先住民クラブ","huihui":"大騒ぎ","hulch":"誤ったスペリング","hulk":"船体、ぶかぶかな体","hulked":"ぶかぶかしていた、大きく見えた","hulkier":"より大きく太った","hulkiest":"最も大きく太った","hulkily":"ぶかぶかに、大きく","hulkiness":"ぶかぶかさ、大きさ","hulking":"ぶかぶかした、大きな","hulkingly":"ぶかぶかして","hulks":"船体、大きな塊","hulky":"ぶかぶかした、大きな","hull":"殻、外皮","hullabaloo":"大騒ぎ、喧騒","hulled":"殻を取り除かれた","huller":"殻取り機、殻を除く人","hulling":"殻を除く、殻取り","hullos":"呼び掛け","hulm":"誤ったスペリング","hulmari":"誤ったスペリング","huls":"誤ったスペリング","humane":"人道的な、親切な","humanely":"人道的に、親切に","humaneness":"人道性、親切さ","humanise":"人間化する","humanised":"人間化された","humanises":"人間化する","humanising":"人間化する","humanism":"人文主義、人道主義","humanist":"人文主義者、人道主義者","humanistic":"人文主義の、人道主義の","humanistically":"人文主義的に、人道主義的に","humanists":"人文主義者","humanity":"人類、人間性","humanization":"人間化","humanize":"人間化する","humanized":"人間化された","humanizes":"人間化する","humanizing":"人間化する","humanizingly":"人間化するように","humankind":"人類、人間","humanly":"人間的に、人間らしく","humanness":"人間性、人間らしさ","humans":"人間、人類","humble":"謙虚な、低い","humbled":"謙虚にさせられた","humbleneck":"謙虚な首","humbler":"より謙虚な","humbles":"謙虚にさせる","humblest":"最も謙虚な","humbling":"謙虚にさせる","humblingly":"謙虚にさせるように","humbly":"謙虚に、低く","humbug":"いかさま、ほら","humbugged":"いかされた、ほらをつかれた","humbuggeries":"いかさま、ほら","humbuggery":"いかさま、ほら","humbugging":"いかさまをする、ほらをつく","humbugs":"いかさま、ほら","humdinger":"素晴らしい人、すごい物","humdrum":"単調な、退屈な","humectant":"保湿剤、湿潤剤","humerus":"上腕骨","humid":"湿った、湿度の高い","humidified":"加湿された","humidifier":"加湿器","humidifies":"加湿する","humidify":"加湿する、湿度を高める","humidifying":"加湿する","humidity":"湿度、湿ること","humidly":"湿ったように、湿度高く","humidness":"湿さ、湿度","humidor":"ヒューミドール、喫煙具保管庫","humification":"腐植化","humify":"腐植を形成する","humiliant":"謙虚にさせるもの","humiliate":"辱める、恥じ入らせる","humiliated":"辱められた、恥じ入った","humiliates":"辱める、恥じ入らせる","humiliating":"辱めるような、恥ずかしい","humiliatingly":"辱めるように、恥ずかしく","humiliation":"辱め、恥","humility":"謙虚さ、謙虚","hummable":"ハミングできる","hummed":"ハミングした","hummer":"ハミングする人、ハチドリ","hummers":"ハミングする人","hummied":"ハミングした","hummier":"より退屈な","hummiest":"最も退屈な","humming":"ハミング、退屈な","hummingbird":"ハチドリ","hummingly":"ハミングするように","hummock":"丘、こぶ","hummocky":"ぼこぼこした、こぶのような","hummus":"フムス、ひよこ豆ペースト","hummuses":"フムス","humongous":"巨大な、莫大な","humor":"ユーモア、気分","humoral":"液体の、体液の","humoralism":"液体説","humoralist":"液体説支持者","humoralistic":"液体説的な","humorally":"液体的に、体液的に","humored":"ユーモアのある、機嫌を取った","humoredly":"ユーモアを持って、気分で","humoredness":"ユーモア、気分","humorful":"ユーモアに満ちた","humorfully":"ユーモアに満ちて","humorfulness":"ユーモア性","humorific":"ユーモアを生み出す","humoring":"ユーモアがある、機嫌を取る","humoringly":"ユーモアを持って、機嫌を取るように","humorism":"ユーモア主義","humorist":"ユーモア作家、人気者","humoristic":"ユーモア的な","humoristically":"ユーモア的に","humorists":"ユーモア作家","humorless":"ユーモアのない","humorlessly":"ユーモアなく","humorlessness":"ユーモアのなさ","humorous":"ユーモアのある、面白い","humorously":"ユーモアを持って、面白く","humorousness":"ユーモア性、面白さ","humors":"ユーモア、気分","humous":"腐植を含む","hump":"こぶ、隆起","humpback":"こぶ背、背中のこぶ","humpbacked":"こぶ背の","humped":"こぶのある、盛り上がった","humper":"こぶを持つもの","humph":"ふん、呻き","humphed":"ふんと言った","humphing":"ふんと言う","humphs":"ふん、呻き","humpily":"こぶのように","humpiness":"こぶのような性質","humping":"こぶのような、盛り上がった","humpingly":"こぶのようにして","humpless":"こぶのない","humplessness":"こぶのなさ","humplike":"こぶのような","humps":"こぶ、隆起","humpy":"こぶのような、でこぼこした","humus":"腐植、栄養分","humuses":"腐植","humwork":"腐植の作用","humyardite":"フミアルダイト鉱物","humzed":"ハミングした","humzes":"ハミング","humzing":"ハミング","humzingly":"ハミングするように","hun":"フン族、悪い人","hunch":"背を丸める、予感","hunchback":"せむし、背中が曲がった人","hunchbacked":"背中が曲がった","hunched":"背を丸めた、背を湾曲した","hunches":"背を丸める、予感","hunching":"背を丸める","hunchingly":"背を丸めるように","hunchy":"背を丸めたような","hundred":"百、百個","hundredfold":"百倍","hundreding":"百にする","hundredness":"百の状態","hundreds":"百、百個","hundredth":"百番目","hundredthly":"百番目に","hundredths":"百番目","hundredweight":"百ポンド重量","hung":"掛けた、吊された","hungarian":"ハンガリーの、ハンガリー人","hungarianness":"ハンガリー性","hungaried":"ハンガリー化された","hungarier":"より飢えた","hungaries":"ハンガリー","hungariest":"最も飢えた","hungarification":"ハンガリー化","hungarified":"ハンガリー化された","hungarifies":"ハンガリー化する","hungarify":"ハンガリー化する","hungarifying":"ハンガリー化する","hungarism":"ハンガリー主義","hungarist":"ハンガリー主義者","hungaristic":"ハンガリー主義的な","hungaristically":"ハンガリー主義的に","hungarization":"ハンガリー化","hungarize":"ハンガリー化する","hungarized":"ハンガリー化された","hungarizes":"ハンガリー化する","hungarizing":"ハンガリー化する","hungarizingly":"ハンガリー化するように","hungarizingness":"ハンガリー化の性質","hungarling":"ハンガリーの小さな人","hungarned":"ハンガリー風に飾られた","hungarness":"飢えた状態","hungarry":"誤ったスペリング","hungarwise":"ハンガリー風に","hungarwood":"ハンガリー材","hungarwork":"ハンガリー風の仕事","hungarworked":"ハンガリー風に作られた","hungarworking":"ハンガリー風の仕事をする","hungarwort":"ハンガリー草","hungarwoven":"ハンガリー風に織られた","hungarwright":"ハンガリー職人","hungarwrought":"ハンガリー風に作られた","hungaryed":"ハンガリー風に飾られた","hungaryen":"ハンガリー女性","hungarying":"ハンガリー化する","hungarym":"ハンガリー男性","hungarymade":"ハンガリー製","hungarymake":"ハンガリー製","hungarymaker":"ハンガリー製造者","hungarymakery":"ハンガリー製造業","hungarymakingly":"ハンガリー製のように","hungarymakingness":"ハンガリー製性","idea":"考え","identify":"特定する","ignore":"無視する","illustrate":"説明する","image":"画像、イメージ","imagine":"想像する","immediate":"即座の","immigrant":"移民","immune":"免疫の","implement":"実施する","implication":"影響、意味","imply":"暗示する","import":"輸入する","impose":"課す","improve":"改善する","inadequate":"不十分な","incentive":"動機、奨励","incident":"事件","include":"含む","income":"収入","incorporate":"組み込む","increasingly":"ますます","independent":"独立した","index":"指標","indicate":"示す","individual":"個人の","industrial":"産業の","industry":"産業","inequality":"不平等","inevitable":"避けられない","infant":"乳児","inflation":"インフレ","influence":"影響","inform":"知らせる","infrastructure":"インフラ","inhabit":"住む","initial":"初期の","initiative":"取り組み","inject":"注射する","innovation":"革新","input":"入力","inquiry":"調査","insect":"昆虫","insight":"洞察","inspect":"検査する","install":"設置する","instance":"例","institution":"機関","instruction":"指示","instrument":"器具","insurance":"保険","integrate":"統合する","intellectual":"知的な","intelligence":"知能","intend":"意図する","intense":"激しい","interact":"交流する","interest":"関心、利益","internal":"内部の","international":"国際的な","interpret":"解釈する","intervene":"介入する","interview":"面接","introduce":"紹介する","invade":"侵入する","invest":"投資する","investigate":"調査する","investment":"投資","involve":"含む、関与する","isolate":"孤立させる","issue":"問題、発行する","item":"項目","job":"仕事","join":"参加する","journal":"学術誌","journey":"旅","judge":"判断する","justify":"正当化する","keen":"熱心な","key":"鍵、重要な","knowledge":"知識","label":"ラベル","labor":"労働","lack":"不足","landscape":"景観","language":"言語","largely":"大部分は","launch":"発売する","law":"法律","layer":"層","lead":"導く","league":"連盟","lean":"傾く","legal":"法的な","legislation":"法律","leisure":"余暇","lend":"貸す","level":"レベル","liberal":"自由主義の","liberty":"自由","license":"免許","likely":"おそらく","likewise":"同様に","limit":"制限する","link":"つなぐ","literacy":"識字力","literature":"文学","locate":"位置する","logic":"論理","long-term":"長期の","loss":"損失","machine":"機械","magnitude":"大きさ","mainstream":"主流","maintain":"維持する","major":"主要な","majority":"多数","manage":"管理する","manifest":"明白な","manipulate":"操作する","manner":"方法","manufacture":"製造する","margin":"余白、利益率","marine":"海の","massive":"大規模な","mature":"成熟した","maximize":"最大化する","measure":"測定する","mechanism":"仕組み","media":"メディア","medical":"医学の","mental":"精神の","mention":"言及する","merely":"単に","merge":"合併する","method":"方法","migrate":"移住する","military":"軍事の","minimal":"最小の","ministry":"省","minority":"少数派","modify":"修正する","monitor":"監視する","moreover":"さらに","mortgage":"住宅ローン","motivation":"動機","mutual":"相互の","narrow":"狭い","nation":"国家","native":"原住民の","natural":"自然の","necessary":"必要な","negative":"否定的な","neglect":"無視する","negotiate":"交渉する","network":"ネットワーク","neutral":"中立の","nevertheless":"それにもかかわらず","norm":"基準","normal":"普通の","notable":"注目すべき","notion":"概念","nuclear":"核の","numerous":"多数の","nutrient":"栄養素","nutrition":"栄養","objective":"目的、客観的な","obligation":"義務","observe":"観察する","obtain":"得る","obvious":"明白な","occasion":"機会","occupy":"占める","occur":"起こる","odd":"奇妙な","offend":"怒らせる","offset":"相殺する","ongoing":"進行中の","opinion":"意見","opponent":"反対者","opportunity":"機会","oppose":"反対する","option":"選択肢","organ":"臓器","organic":"有機の","organize":"組織する","orient":"方向づける","origin":"起源","outcome":"結果","outline":"概要","output":"生産高","overall":"全体的な","overcome":"克服する","overlook":"見落とす","overseas":"海外の","owe":"負う","oxygen":"酸素","pace":"ペース、速度","package":"パッケージ、包装","pain":"痛み、苦しみ","paint":"ペイント、塗料","pair":"ペア、組","pale":"淡い、薄い","panel":"パネル、委員会","paper":"紙、論文","paragraph":"段落","parallel":"平行、対応する","parameter":"パラメータ、要因","parent":"親、両親","park":"公園、駐車する","part":"部分、部品","partial":"部分的な","participant":"参加者","participate":"参加する","particular":"特定の、特別な","particularly":"特に、とりわけ","partly":"部分的に","partner":"パートナー、相手","party":"パーティー、政党","pass":"通る、合格する","passage":"通路、一節","passenger":"乗客","passion":"情熱、熱情","passive":"受動的な、消極的な","past":"過去","patch":"パッチ、修正","path":"小道、道路","patience":"忍耐、根気","patient":"患者、忍耐強い","pattern":"パターン、傾向","pause":"一時停止、休止","pay":"支払う、給与","payment":"支払い、給料","peace":"平和、静寂","peak":"ピーク、頂上","pedestrian":"歩行者","peer":"同僚、仲間","penalty":"ペナルティ、罰金","pencil":"鉛筆","penetrate":"貫く、浸透する","peninsula":"半島","pension":"年金、退職金","perceive":"認識する、気づく","percent":"パーセント、百分率","perception":"認識、知覚","perfect":"完璧な、完全な","perfectly":"完璧に、全く","perform":"実行する、演じる","performance":"パフォーマンス、成績","performer":"実行者、演者","perhaps":"もしかして、おそらく","period":"期間、時期","periodic":"定期的な","permanently":"永久に","permission":"許可、認可","permit":"許可する、認める","persist":"続く、粘る","persistence":"継続、忍耐","person":"人、個人","personal":"個人的な","personality":"性格、人格","personally":"個人的に","personnel":"職員、人事","perspective":"視点、展望","persuade":"説得する","persuasive":"説得力のある","pest":"害虫、厄介者","pesticide":"農薬、殺虫剤","petition":"陳情、嘆願","phase":"段階","phenomenon":"現象","philosopher":"哲学者","philosophy":"哲学、思想","phone":"電話","photograph":"写真","photographer":"写真家","physical":"物理的な、身体的な","physically":"物理的に、身体的に","physician":"医師","physicist":"物理学者","physics":"物理学","piano":"ピアノ","pick":"選ぶ、摘む","piece":"ピース、断片","pier":"埠頭、桟橋","pile":"杭、積み重ね","pill":"ピル、薬","pilot":"パイロット","pioneer":"先駆者","pipe":"パイプ、管","pirate":"海賊","pit":"穴、落とし穴","pitch":"ピッチ、程度","place":"場所、置く","placement":"配置","plague":"疫病、悩ます","plain":"平野、明白な","plaintiff":"原告","plan":"計画、プラン","plane":"飛行機、平面","planet":"惑星","plank":"厚板","planning":"計画、企画","plant":"工場、植物","plastic":"プラスチック","plate":"板、プレート","platform":"プラットフォーム","platinum":"白金、プラチナ","play":"遊ぶ、演じる","player":"選手、プレイヤー","playground":"遊び場","plaza":"広場","plea":"嘆願、懇願","plead":"嘆願する","pleasant":"楽しい、快い","please":"お願いします","pleasure":"喜び、楽しみ","pledge":"誓約、約束","plunge":"飛び込む","plural":"複数、複数形","plus":"プラス、追加","pocket":"ポケット","poem":"詩","poet":"詩人","poetic":"詩的な","poetry":"詩","point":"ポイント、指摘","pointer":"ポインタ","poison":"毒、中毒させる","poisonous":"有毒な","poke":"つつく、押す","polar":"極地の","pole":"極、棒","police":"警察","policeman":"警察官","policy":"方針、政策","polish":"磨く","polite":"丁寧な","politely":"丁寧に","political":"政治的な","politician":"政治家","politics":"政治","poll":"世論調査、投票","pollutant":"汚染物質","pollute":"汚す、汚染する","pollution":"汚染、公害","pond":"池","pool":"プール、グループ","poor":"貧しい、低い","pop":"ポップ、出現する","popular":"人気のある","popularity":"人気、評判","population":"人口、集団","porch":"玄関ポーチ","pork":"豚肉","portable":"携帯可能な","portal":"ポータル、入口","portrait":"肖像画","portray":"描く、描写","pose":"ポーズ、姿勢","position":"位置、立場","positive":"前向きな、肯定的な","positively":"肯定的に","possess":"所有する","possession":"所有、所有物","possibility":"可能性","possible":"可能な","possibly":"おそらく","post":"ポスト、投稿","postage":"郵便料金","postal":"郵便の","postcard":"はがき","poster":"ポスター","posterior":"後ろの","posterity":"後世、子孫","postpone":"延期する","posture":"姿勢、態度","pot":"鍋、つぼ","potato":"じゃがいも","potential":"可能性、潜在力","potentially":"潜在的に","potion":"魔法の飲み薬","pottery":"陶芸、陶器","poultry":"家禽、鶏肉","pound":"ポンド、殴打する","pour":"注ぐ、流す","poverty":"貧困、貧乏","powder":"粉、パウダー","power":"力、電力","powerful":"強力な","powerfully":"強力に","practical":"実用的な","practically":"ほぼ、実質的に","practice":"慣行、練習","practise":"練習する","practitioner":"従事者","pragmatic":"実利的な","praise":"称賛、褒める","pray":"祈る、願う","prayer":"祈り","preach":"説教する","preacher":"説教者","precarious":"危険な","precaution":"予防措置","precede":"先行する","precedent":"先例、前例","preceding":"先行する","precious":"貴重な、珍しい","precisely":"正確に","precision":"精度、正確さ","preclude":"排除する","precocious":"早熟な","predecessor":"前任者","predicament":"苦境、困った状況","predict":"予測する","predictable":"予測可能な","prediction":"予測、予言","predominant":"優勢な","predominantly":"主に","predominate":"支配する","preface":"前置き、序文","prefer":"好む、選ぶ","preferable":"より好ましい","preferably":"できれば","preference":"好み、希望","preferential":"優遇の","prefix":"接頭語","pregnancy":"妊娠","pregnant":"妊娠した","prehistoric":"先史の","prejudice":"偏見、先入観","prejudiced":"偏った","preliminary":"予備的な","premature":"時期尚早な","premise":"前提、建物","premium":"プレミアム、保険料","premonition":"予感、前兆","preoccupied":"心配している","preoccupy":"心を占める","preparation":"準備、調製","preparatory":"準備的な","prepare":"準備する","preparedness":"準備態勢","preposition":"前置詞","prerequisite":"前提条件","prerogative":"特権","presage":"前兆、しるし","prescribe":"処方する","prescribed":"処方された","prescription":"処方箋、規定","presence":"存在、出席","present":"プレゼント、現在の","presentation":"プレゼンテーション","presenter":"発表者","presently":"すぐに、現在","preservation":"保存、保護","preservative":"防腐剤","preserve":"保存する","preside":"議長を務める","president":"大統領、会長","presidential":"大統領の","press":"プレス、新聞","pressed":"押された、急いている","pressing":"緊急の","pressure":"圧力、プレッシャー","prestige":"威信、名声","prestigious":"威信のある","presumably":"おそらく","presume":"推定する","presumption":"推定、推測","presumptuous":"独善的な","pretence":"装い、見かけ","pretend":"ふりをする","pretense":"装い、見かけ","pretension":"主張、気取り","pretentious":"気取った","pretext":"口実、言い訳","pretty":"きれいな、かわいい","prevail":"優勢である","prevailing":"優勢な、主流の","prevalence":"流行、蔓延","prevalent":"流行している","prevent":"防ぐ、妨げる","preventable":"防止可能な","prevention":"防止、予防","preventive":"予防的な","preview":"プレビュー","previous":"以前の、前の","previously":"以前に","prey":"獲物、被害者","price":"価格、値段","priceless":"貴重な","pricey":"高い","prick":"刺す、痛む","prickly":"とげとげした","pride":"誇り、プライド","priest":"司祭、神父","primarily":"主に","primary":"主要な、初等的な","primate":"霊長類","prime":"一流の、全盛期","primitive":"原始的な","prince":"王子、皇太子","princess":"王女、皇女","principal":"主要な、学長","principally":"主に","principle":"原則、原理","principled":"原則的な","print":"印刷、版画","printed":"印刷された","printer":"プリンター、印刷業者","printing":"印刷、印刷業","prior":"以前の、優先的な","priority":"優先度","prism":"プリズム","prison":"刑務所","prisoner":"囚人、被告人","privacy":"プライバシー、個人の自由","private":"個人的な、民間の","privately":"個人的に","privation":"欠乏、剥奪","privilege":"特権、恩恵","privileged":"特権のある","privy":"知っている、秘密の","prize":"賞、賞金","probability":"確率、可能性","probable":"可能性の高い","probably":"おそらく","probation":"試用期間","probe":"調査、探査機","problem":"問題、課題","problematic":"問題のある","procedural":"手続き上の","procedure":"手続き、手順","proceed":"進む、続行する","proceeding":"進行、訴訟手続き","proceeds":"収益、代金","process":"プロセス、処理する","procession":"行列、行進","proclaim":"宣言する","proclamation":"宣言、公告","procrastinate":"先延ばしにする","procrastination":"先延ばし","procure":"調達する","procurement":"調達","prod":"突く、刺激する","produce":"生産する、作り出す","producer":"生産者、プロデューサー","product":"製品、産物","production":"生産、製造","productive":"生産的な","productivity":"生産性","profane":"俗な、不敬な","profanity":"不敬な言葉","profess":"公言する","profession":"職業、専門職","professional":"専門家、プロ","professionally":"専門的に","professor":"教授","professorial":"教授的な","proficiency":"熟練、能力","proficient":"熟練した","profile":"プロフィール、輪郭","profit":"利益、利潤","profitable":"利益の出る","profitably":"採算よく","profiteer":"暴利を得る者","profiteering":"暴利行為","profound":"深刻な、深い","profoundly":"深く","profundity":"深さ","profuse":"豊富な、ふんだんな","profusely":"豊富に","profusion":"豊富、大量","progenitor":"祖先、創始者","progeny":"子孫、産物","prognosis":"予後、見通し","program":"プログラム、計画","programme":"プログラム、放送番組","programming":"プログラミング","progress":"進捗、進歩","progression":"進行","progressive":"進歩的な","progressively":"段階的に","prohibit":"禁止する","prohibition":"禁止、禁酒令","prohibitive":"禁止的な","project":"プロジェクト、計画","projection":"投影、予測","projector":"プロジェクター","prolific":"多産の、多作な","prologue":"序文、前置き","prolong":"長引かせる","prolongation":"延長","prolonged":"長期間の","promenade":"遊歩道、散歩","prominence":"突出、有名度","prominent":"目立つ、有名な","prominently":"目立つように","promiscuous":"乱れた","promise":"約束、可能性","promising":"有望な","promontory":"岬","promote":"昇進させる、促進する","promoter":"プロモーター","promotion":"昇進、販売促進","promotional":"販売促進の","prompt":"素早い、促す","promptly":"すぐに","promptness":"素早さ","promulgate":"公布する","prone":"寝転んだ、傾きやすい","prong":"又、歯","pronoun":"代名詞","pronounce":"発音する、宣言する","pronounced":"著しい、明白な","pronouncement":"宣言","pronunciation":"発音","proof":"証拠、校正刷り","proofread":"校正する","prop":"支柱、小道具","propaganda":"プロパガンダ、宣伝","propagandist":"宣伝者","propagate":"広める、繁殖させる","propagation":"繁殖、伝播","propane":"プロパン","propel":"推進する","propeller":"プロペラ","propensity":"傾向、気質","proper":"適切な、正当な","properly":"適切に","property":"財産、性質","prophecy":"予言、預言","prophesy":"予言する","prophet":"預言者","prophetic":"預言的な","prophetically":"預言的に","proponent":"支持者","proportion":"割合、比例","proportional":"比例する","proportionally":"比例して","proportionate":"適切な","proportionately":"相応に","proposal":"提案、申し込み","propose":"提案する","proposition":"命題、提案","propound":"提唱する","proprietary":"所有の","proprietor":"所有者、経営者","proprietorial":"所有者的な","proprietorship":"所有権","propriety":"礼儀、適切さ","propulsion":"推進、推進力","prosaic":"平凡な","proscribe":"禁止する","proscription":"禁止","prose":"散文、公式文","prosecute":"起訴する","prosecution":"起訴、告発","prosecutor":"検事","prospect":"見通し、候補者","prospective":"将来の","prospectively":"将来的に","prospector":"鉱山探査人","prospectus":"募集要項","prosper":"繁栄する","prosperity":"繁栄、豊かさ","prosperous":"繁栄している","prosperously":"繁栄して","prostitute":"娼婦、堕落させる","prostitution":"売春","protagonist":"主人公、主導者","protean":"変幻自在の","protect":"保護する","protected":"保護された","protection":"保護、防御","protectionism":"保護主義","protectionist":"保護主義者","protective":"保護的な","protectively":"保護的に","protector":"保護者","protectorate":"保護領","protein":"タンパク質","protest":"抗議、異議を唱える","protestant":"プロテスタント、抗議者","protestation":"抗議","protester":"抗議者","protocol":"プロトコル、儀礼","proton":"陽子","prototype":"プロトタイプ","prototypical":"原型的な","protracted":"長引く","protractor":"分度器","protrude":"突き出す","protruding":"突き出た","protrusion":"突出","protuberance":"隆起","protuberant":"隆起した","proud":"誇りに思う、高慢な","proudly":"誇りを持って","provable":"証明可能な","prove":"証明する","proven":"証明された","provenance":"出所、由来","proverb":"ことわざ","proverbial":"ことわざの","proverbially":"ことわざのように","provide":"供給する","provided":"提供された","providence":"神の摂理","providential":"摂理的な","providentially":"摂理的に","provider":"提供者","providing":"供給して","province":"地方、領域","provincial":"地方の","provincialism":"地方性","provincially":"地方的に","provision":"規定、条項","provisional":"暫定的な","provisionally":"暫定的に","provisioning":"食糧補給","proviso":"ただし書き","provocation":"挑発","provocative":"挑発的な","provocatively":"挑発的に","provoke":"挑発する","provoked":"挑発された","provoking":"挑発的な","provokingly":"挑発的に","prow":"船首","prowess":"武勇、腕前","prowl":"忍び歩く","prowler":"侵入者","proximal":"近い","proximate":"近い","proximately":"ほぼ","proximity":"近接、近さ","proxy":"代理、代理人","prude":"貞潔を気にする人","prudence":"思慮、分別","prudent":"分別のある","prudently":"分別を持って","prudery":"禁欲的な気取り","prudish":"禁欲的な","prudishly":"禁欲的に","prudishness":"禁欲的な態度","prune":"枝打ちする、削る","pruning":"枝打ち","prurently":"好色に","prurience":"好色、猥褻さ","prurient":"好色な、猥褻な","psalm":"詩篇、歌詞","psalmist":"詩篇作者","psalmody":"聖歌唱法","psalter":"詩篇集","pseudonym":"筆名、仮名","psi":"プサイ、ギリシャ文字","psych":"精神、心理学","psyche":"精神、心","psychedelic":"サイケデリック","psychiatric":"精神医学的な","psychiatrist":"精神科医","psychiatry":"精神医学","psychic":"心霊的な、超能力の","psychical":"心霊的な","psychically":"心霊的に","psyching":"心理戦術","psychoactive":"精神作用のある","psychoanalysis":"精神分析","psychoanalyst":"精神分析医","psychoanalytic":"精神分析的な","psychoanalytical":"精神分析的な","psychogenic":"心因性の","psychological":"心理的な","psychologically":"心理的に","psychologist":"心理学者","psychology":"心理学","psychopath":"精神病質者","psychopathic":"精神病質の","psychopathology":"精神病理学","psychosis":"精神病","psychosomatic":"心身医学的な","psychotic":"精神病性の","ptarmigan":"雷鳥","pteranodon":"翼竜","pterodactyl":"翼竜","pterosaur":"翼竜","ptomaine":"腐敗アルカロイド","pub":"パブ、酒場","puberty":"思春期","pubescence":"思春期初期","pubescent":"思春期の","pubic":"陰部の","public":"公開の、一般向けの","publican":"酒場主人、徴税官","publication":"出版、発表","publicist":"広報担当者","publicity":"広告宣伝、宣伝","publicize":"広告宣伝する","publicly":"公開で、公に","publish":"出版する、公表する","published":"出版された","publisher":"出版社","publishing":"出版","puce":"エンジ色","puck":"パック、妖精","pucker":"しわを寄せる","puckery":"しわのある","puckish":"いたずら好きな","pudding":"プディング","puddle":"水たまり","pudgy":"太った","pueblo":"町","puerile":"幼稚な","puerilely":"幼稚に","puerility":"幼稚さ","puerperal":"産褥の","puerperium":"産褥期","puff":"ふう、吹く","puffed":"ふくよかな、膨れた","puffer":"フグ","puffery":"大げさな宣伝","puffin":"ニシツノメドリ","puffiness":"腫れ","puffing":"ハッハッという息使い","puffy":"膨れた、腫れた","pug":"パグ犬","pugilism":"ボクシング","pugilist":"ボクサー","pugilistic":"ボクシングの","pugnacious":"喧嘩好きな","pugnaciousness":"喧嘩好き","pugnacity":"喧嘩好き","puja":"礼拝、祈祷","puke":"吐く、嘔吐","pulchritude":"美しさ","pulchritudinous":"美しい","pule":"泣き言を言う","pull":"引く、引き抜く","pulled":"引かれた","pullet":"若い雌鶏","pulley":"滑車、プーリー","pullover":"プルオーバー","pulmonary":"肺の","pulp":"パルプ、果肉","pulped":"パルプ状の","pulpiness":"パルプ状","pulpit":"説教壇、講壇","pulpwood":"パルプ用材","pulpy":"パルプ状の","pulsate":"脈動する","pulsating":"脈動する","pulsation":"脈動","pulsator":"脈動装置","pulse":"脈拍、脈動","pulsed":"脈動した","pulseless":"脈なしの","pulsing":"脈動する","pulverization":"粉砕","pulverize":"粉砕する","pulverizer":"粉砕機","pulverulent":"粉状の","puma":"ピューマ、クーガー","pumice":"軽石","pumiceous":"軽石のような","pump":"ポンプ、くみ上げる","pumped":"ポンプで圧送された","pumpernickel":"黒パン","pumpkin":"かぼちゃ","pun":"しゃれ、言葉遊び","punch":"パンチ、穿孔","punchable":"殴られやすい","punched":"パンチされた","puncher":"穿孔機","punching":"パンチング","punchy":"力強い","punctate":"点在する","punctation":"斑点","punctilio":"細かい作法","punctilious":"几帳面な","punctiliously":"几帳面に","punctiliousness":"几帳面さ","punctual":"時間に正確な","punctuality":"時間厳守","punctually":"時間正確に","punctuate":"句読点を打つ","punctuated":"句読点が打たれた","punctuation":"句読法","puncture":"穴を開ける","punctured":"穴が開いた","pundit":"専門家、評論家","punditic":"専門家的な","punditry":"評論","pungency":"刺激性、辛辣さ","pungent":"辛辣な、刺激的な","pungently":"辛辣に","punic":"ポエニ戦争の","puniness":"小ささ、弱さ","punish":"罰する、懲らしめる","punishability":"罰せられやすさ","punishable":"罰せられるべき","punished":"罰された","punisher":"罰する者","punishing":"罰する、過酷な","punishingly":"厳しく","punishment":"罰、懲罰","punitive":"懲罰的な","punitively":"懲罰的に","punitiveness":"懲罰性","punk":"パンク、つまらない奴","punker":"パンクロッカー","punkie":"アブ","punkish":"パンクの","punky":"腐りかけた","punned":"しゃれを言った","punner":"しゃれを言う人","punning":"しゃれを言うこと","punny":"しゃれの多い","punster":"しゃれを言う人","punt":"パント、浅底の舟","punted":"パントキックした","punter":"舟をさおで押す人","puntil":"ポンテル","punting":"パントキック","punts":"複数のパント","puny":"小さい、弱い","pupa":"蛹、さなぎ","pupae":"複数の蛹","pupal":"蛹の","puparium":"蛹の殻","pupate":"蛹になる","pupation":"蛹化","pupil":"生徒、瞳","pupillage":"修習期間","pupillary":"瞳の","pupils":"複数の生徒","puppet":"操り人形、傀儡","puppeteer":"操り人形師","puppetry":"人形劇","puppets":"複数の操り人形","puppy":"子犬、若い犬","puppydom":"子犬の世界","puppyhood":"子犬期","puppyish":"子犬のような","pups":"複数の子犬","pure":"純粋な、汚れのない","purebred":"純血種の","pureeness":"純粋さ","purely":"全く、純粋に","pureness":"純粋さ","purer":"より純粋な","purest":"最も純粋な","purgation":"下剤、浄化","purgative":"下剤","purgatorial":"煉獄の","purgatorily":"煉獄のように","purgatory":"煉獄、苦しみ","purge":"浄化する、下す","purged":"浄化された","purger":"浄化する物","purges":"複数の浄化","purging":"浄化、下す","purification":"浄化、精製","purificator":"浄化者","purificatory":"浄化的な","purified":"浄化された","purifier":"浄化装置","purifies":"浄化する","purify":"浄化する、精製する","purifying":"浄化する","purim":"プーリム祭","purist":"純正主義者","puristic":"純正主義的な","puristically":"純正主義的に","purity":"純潔、純粋さ","purl":"縁取りする","purled":"縁取りされた","purler":"縁取りする人","purlieu":"周辺地域","purlieus":"周辺地域","purling":"縁取りすること","purloin":"盗む、横領する","purloined":"盗まれた","purloiner":"盗む人","purloining":"盗むこと","purls":"複数の縁取り","purple":"紫、紫色の","purpled":"紫色の","purplehead":"紫頭","purpleheart":"紫心木","purpleness":"紫色","purpler":"より紫の","purplest":"最も紫の","purplish":"紫がかった","purply":"やや紫の","purport":"主張する、意図","purported":"主張された","purportedly":"主張によると","purporting":"主張する","purports":"複数の主張","purpose":"目的、意図","purposebuilt":"特別に設計された","purposed":"意図された","purposeful":"目的のある","purposefully":"目的的に","purposefulness":"目的性","purposeless":"目的のない","purposelessly":"目的のなく","purposelessness":"目的のなさ","purposely":"意図的に、わざと","purposer":"目的を立てる人","purposes":"複数の目的","purposing":"目的とする","purposive":"目的的な","purposively":"目的的に","purposiveness":"目的性","purr":"ゴロゴロいう","purred":"ゴロゴロいった","purring":"ゴロゴロいうこと","purringly":"ゴロゴロと","purrs":"複数のゴロゴロ","purse":"財布、口論","pursed":"狭くした","purser":"船舶の主計官","pursers":"複数の主計官","purses":"複数の財布","pursily":"息が切れて","pursiness":"息切れ","pursing":"狭くすること","purslane":"スベリヒユ","pursuable":"追求可能な","pursuance":"追求、実行","pursuant":"〜に従って","pursuantly":"従って","pursue":"追求する、実行する","pursued":"追求された","pursuer":"追跡者","pursuers":"複数の追跡者","pursues":"追求する","pursuing":"追求する","pursuit":"追求、追跡","pursuits":"複数の追求","pursy":"息が切れる","purulence":"膿の性質","purulency":"膿の性質","purulent":"膿性の","purulently":"膿性に","purvey":"提供する、供給する","purveyed":"提供された","purveying":"提供する","purveyor":"提供者、納入業者","purveyors":"複数の提供者","purveys":"提供する","purview":"範囲、管轄権","purviews":"複数の範囲","pus":"膿","push":"押す、プッシュ","pushable":"押せる","pushback":"反発","pushbike":"自転車","pushbutton":"プッシュボタン","pushdown":"プッシュダウン","pushed":"押された","pusher":"押す人、押し屋","pushers":"複数の押し屋","pushes":"複数の押し","pushful":"野心的な","pushfully":"野心的に","pushfulness":"野心性","pushier":"より押し付けがましい","pushiest":"最も押し付けがましい","pushily":"押し付けがましく","pushiness":"押し付けがましさ","pushing":"押すこと、野心的な","pushingly":"押し付けがましく","pushoff":"出発","pushover":"弱い者、簡単なこと","pushovers":"複数の弱い者","pushpin":"画鋲","pushpins":"複数の画鋲","pushrod":"プッシュロッド","pushrods":"複数のプッシュロッド","pushup":"腕立て伏せ","pushups":"複数の腕立て伏せ","pushy":"押し付けがましい","pusillanimity":"卑怯さ","pusillanimous":"卑怯な","pusillanimously":"卑怯に","pusillanimousness":"卑怯さ","puss":"猫、顔","pusscat":"猫、気の弱い人","pussface":"ネコのような顔","pussfoot":"こっそり歩く","pussfooted":"こっそりした","pussfooting":"こっそり歩くこと","pussies":"複数の猫","pussy":"猫、やさしい","pussycat":"猫、気の弱い人","pustular":"膿疱の","pustulated":"膿疱のある","pustulation":"膿疱形成","pustule":"膿疱、吹き出物","pustules":"複数の膿疱","put":"置く、入れる","put-down":"軽蔑、けなし","putamen":"黒質","putamina":"複数の黒質","putaminal":"黒質の","putative":"推定される","putatively":"推定に","putaway":"保管","putback":"変更、修正","putdown":"けなし、軽蔑","putefaction":"腐敗","putout":"三振","putput":"プットプット音","putrefactive":"腐敗性の","putrefied":"腐った","putrefies":"腐らせる","putrefy":"腐らせる","putrefying":"腐らせること","putrescence":"腐敗","putrescent":"腐敗する","putrid":"腐った","putridly":"腐って","putridness":"腐敗性","putsch":"クーデター","putsches":"複数のクーデター","putschism":"クーデター主義","puttanesca":"プッタネスカ","puttanesque":"プッタネスカ風","putted":"パットした","puttee":"脚巻き","puttees":"複数の脚巻き","putten":"置いた","putter":"パター","putterer":"ゴルファー","putterers":"複数のゴルファー","puttering":"パッティング","puttied":"パテで埋めた","puttier":"パテを詰める人","putties":"複数のパテ","putting":"パッティング","puttingly":"パッティングして","puttock":"トビ","puttocks":"複数のトビ","putts":"複数のパット","putty":"パテ、グレー色","puttying":"パテを詰めること","puttylike":"パテのような","puttyroot":"アツモリソウ","puttyroots":"複数のアツモリソウ","putup":"仕組まれた","putzed":"いじった","putzes":"複数のいじり","putzing":"いじること","puzzle":"謎、困らせる","puzzled":"困った","puzzledheaded":"頭が混乱した","puzzledness":"困惑","puzzlement":"困惑","puzzler":"謎の人、謎","puzzlers":"複数の謎","puzzles":"複数の謎","puzzling":"困らせる、謎めいた","puzzlingly":"謎めいて","puzzy":"謎めいた","pya":"ピャー","pyaemia":"敗血症","pyaemias":"複数の敗血症","pyaemic":"敗血症の","pyalgia":"顔面痛","pyarthosis":"化膿性関節症","pyarthritis":"化膿性関節炎","pycnid":"声胞子","pycnidial":"声胞子層の","pycnidiospore":"声胞子","pycnidium":"声胞子層","pycnidria":"複数の声胞子層","pycnids":"複数の声胞子","pycnium":"狭い実","pycnometer":"比重計","pycnometers":"複数の比重計","pycnosis":"核濃縮","pycnotic":"核濃縮の","pye":"パイ","pyebald":"白黒混合の","pyelitis":"腎盂腎炎","pyelogram":"腎盂造影","pyelograms":"複数の腎盂造影","pyelography":"腎盂造影法","pyelometry":"腎盂計測","pyelonephritis":"腎盂腎炎","pyelonephrosis":"腎盂腎症","pyeloplication":"腎盂ひだ作成術","pyeloscopy":"腎盂鏡検査","pyelostomy":"腎盂切開術","pyelotomy":"腎盂結石切除術","pyeloureteral":"腎盂尿管の","pyeloureteric":"腎盂尿管の","pyeloureteritis":"腎盂尿管炎","pyemia":"敗血症","pyemias":"複数の敗血症","pyemic":"敗血症の","pyemoid":"敗血症のような","pyencephalus":"脳膿瘍","pyes":"複数のパイ","pyeterus":"化膿熱","pyetic":"化膿性の","pyetiology":"化膿学","pyexanthem":"膿発疹","pyexanthema":"膿発疹","pygal":"ピグマの","pygalgia":"仙骨痛","pygalid":"ピグマイドのような","pygalism":"ピグマイズム","pygamin":"ピグマミン","pygamins":"複数のピグマミン","pygamy":"矮小化","pyganglion":"膿性神経節","pygarg":"白水牛","pygargs":"複数の白水牛","pygargus":"白水牛","pygarguses":"複数の白水牛","pygaya":"ピガヤ","pygbaart":"ピグバート","pygeia":"ピグイア","pygelas":"複数のピグエラ","pygencephaly":"矮小脳症","pygenzoon":"ピグエンゾー","pygenzoons":"複数のピグエンゾー","pygera":"ピグエラ","pygeral":"ピグエラの","pygerism":"矮小化","pygerous":"矮小の","pygesis":"矮小化","pygetiis":"ピグエティス","pygeum":"プルーン","pygeums":"複数のプルーン","pygic":"仙骨の","pygidial":"ピグィディアルの","pygidian":"ピグィディアンの","pygidium":"仙骨部分","pygidiums":"複数の仙骨部分","pygidoid":"仙骨のような","pygidoidea":"ピグィディオイデア","pygmaeism":"ピグマエイズム","pygmaeoid":"ピグマエオイドのような","pygmaeology":"ピグマエオロジー","pygmaes":"複数のピグマエ","pygmaeum":"ピグマエウム","pygmaeus":"ピグマエウス","pygmies":"複数のピグミー","pygmification":"ピグミー化","pygmified":"矮小化した","pygmify":"矮小化する","pygmoid":"ピグミーのような","pygmoidism":"ピグミーのような状態","pygmoidosis":"ピグミーのような状態","pygmy":"ピグミー、矮小な","pygmydom":"ピグミーの領域","pygmyhood":"ピグミーの状態","pygmyish":"ピグミーのような","pygmyism":"ピグミー主義","pygmyroot":"ピグミールート","pygmys":"複数のピグミー","pygomelia":"矮小肢","pygomorphic":"矮小形態の","pygomphysis":"矮小関節","pygoneure":"ピゴニューレ","pygopagus":"仙骨双胎児","pygopodal":"ピゴポーダルの","pygopodia":"複数のピゴポーディア","pygopodium":"ピゴポーディウム","pygopodiums":"複数のピゴポーディウム","pygopodous":"仙骨脚の","pygopody":"ピゴポディー","pygopy":"ピゴピー","pygosceles":"ペンギン","pygoscelidae":"ペンギン科","pygosteus":"ピゴステウス","pygostyal":"ピゴスタイアルの","pygostylar":"ピゴスタイラーの","pygostyle":"ピゴスタイル","pygostyles":"複数のピゴスタイル","pygostylous":"ピゴスタイロウスの","pyjama":"パジャマ","pyjamaed":"パジャマの","pyjamas":"複数のパジャマ","pyk":"パイク","pyke":"パイク","pyked":"パイク状の","pykes":"複数のパイク","pyknic":"ピクニック体型の","pyknicly":"ピクニック体型に","pyknics":"複数のピクニック体型の人","pyknictype":"ピクニック体型","pyknictypes":"複数のピクニック体型","pyknidia":"複数の声胞子層","pyknidial":"声胞子層の","pyknidium":"声胞子層","pyknik":"ピクニック体型の人","pykniks":"複数のピクニック体型の人","pykniktype":"ピクニック体型","pyknom":"ピクノメーター","pyknometer":"比重計","pyknometers":"複数の比重計","pyknomorphic":"ピクノモルフィックの","pyknomorphism":"ピクノモルフィズム","pyknomorphous":"ピクノモルフォウスの","pyknomorphs":"複数のピクノモルフ","pyknomorphy":"ピクノモルフィー","pyknosarcosis":"ピクノサルコーシス","pyknoses":"複数のピクノーシス","pyknosis":"核濃縮","pyknotactical":"ピコタクティカルの","pyknotic":"ピクノティックの","pykotome":"ピコトーム","qualify":"資格を得る","quality":"質","quantity":"量","quarter":"4分の1","question":"質問","quite":"かなり","quote":"引用する","race":"人種、競争","radical":"根本的な","raise":"上げる","random":"無作為の","range":"範囲","rank":"順位","rapid":"急速な","rare":"まれな","rate":"割合","ratio":"比率","raw":"生の","react":"反応する","real":"本当の","realistic":"現実的な","reason":"理由","recall":"思い出す","receive":"受け取る","recent":"最近の","recognize":"認識する","recommend":"推薦する","recover":"回復する","reduce":"減らす","refer":"参照する","reform":"改革","refugee":"難民","refuse":"拒否する","regard":"みなす","region":"地域","register":"登録する","regulate":"規制する","reinforce":"強化する","reject":"拒絶する","relate":"関連する","release":"放出する","relevant":"関連のある","reliable":"信頼できる","relief":"救済","rely":"頼る","remain":"残る","remarkable":"注目すべき","remedy":"治療法","remote":"遠隔の","remove":"取り除く","renewable":"再生可能な","replace":"置き換える","report":"報告する","represent":"代表する","reproduce":"再現する","republic":"共和国","reputation":"評判","request":"要求する","require":"必要とする","research":"研究","reserve":"予約する","resident":"住民","resist":"抵抗する","resolve":"解決する","resource":"資源","respond":"応答する","responsible":"責任がある","restore":"復元する","restrict":"制限する","result":"結果","retain":"保持する","retire":"引退する","reveal":"明らかにする","revenue":"収益","reverse":"逆にする","review":"見直す","revolution":"革命","reward":"報酬","risk":"リスク","role":"役割","route":"ルート","rural":"農村の","sacrifice":"犠牲にする","sample":"サンプル","sanction":"制裁","satellite":"衛星","satisfy":"満足させる","scale":"規模","scarce":"不足した","scatter":"散らす","scenario":"シナリオ","schedule":"予定","scheme":"計画","scholar":"学者","scope":"範囲","sector":"部門","secure":"安全な","seek":"探す","select":"選択する","sense":"感覚","sensitive":"敏感な","separate":"分離する","sequence":"順序","serious":"深刻な","serve":"仕える","settle":"定住する","severe":"厳しい","shift":"移行する","shortage":"不足","significant":"重要な","similar":"似ている","simple":"単純な","simulate":"模擬する","site":"場所","situation":"状況","skill":"技能","slight":"わずかな","solar":"太陽の","sole":"唯一の","solution":"解決策","somewhat":"やや","source":"源","species":"種","specific":"特定の","sponsor":"スポンサー","stable":"安定した","standard":"基準","statistics":"統計","status":"地位","steady":"着実な","stem":"生じる","stimulate":"刺激する","strategy":"戦略","stress":"ストレス","strict":"厳格な","structure":"構造","struggle":"奮闘する","submit":"提出する","subsequent":"その後の","substance":"物質","substantial":"かなりの","substitute":"代替","succeed":"成功する","sufficient":"十分な","suggest":"提案する","suitable":"適切な","summarize":"要約する","supplement":"補足する","supply":"供給","support":"支援する","suppose":"仮定する","suppress":"抑制する","surface":"表面","surgery":"手術","surplus":"余剰","surround":"囲む","survey":"調査","survive":"生き残る","suspect":"疑う","suspend":"中断する","sustain":"維持する","sustainable":"持続可能な","symbol":"象徴","symptom":"症状","system":"システム","target":"目標","task":"課題","tax":"税金","technique":"技術","technology":"テクノロジー","temporary":"一時的な","tend":"傾向がある","tension":"緊張","term":"用語、期間","territory":"領土","theme":"テーマ","theory":"理論","therapy":"療法","thereby":"それによって","threat":"脅威","threshold":"しきい値","thus":"したがって","tissue":"組織","tolerate":"耐える","topic":"話題","toxic":"有毒な","trace":"跡、たどる","tradition":"伝統","transfer":"移転する","transform":"変革する","transition":"移行","transmit":"伝達する","transport":"輸送する","trend":"傾向","trigger":"引き起こす","tropical":"熱帯の","undergo":"経験する","underline":"強調する","underlying":"根底にある","undertake":"引き受ける","unemployment":"失業","uniform":"一様な","unique":"独特の","universal":"普遍的な","urban":"都市の","urge":"促す","utility":"有用性","utilize":"利用する","valid":"有効な","value":"価値","variable":"変数","vary":"異なる","vehicle":"車両","venture":"冒険的事業","version":"版","via":"経由で","victim":"被害者","violate":"違反する","virtual":"仮想の","visible":"目に見える","vision":"視野、ビジョン","vital":"不可欠な","vocabulary":"語彙","volume":"量、巻","voluntary":"自発的な","vulnerable":"脆弱な","wage":"賃金","welfare":"福祉","whereas":"一方で","widespread":"広範囲の","withdraw":"撤退する","witness":"目撃者","worth":"価値がある","yield":"産出する","youth":"若者","zone":"地帯"};
+
+        // Create tooltip element
+        (function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'word-tooltip';
+            tooltip.id = 'wordTooltip';
+            document.body.appendChild(tooltip);
+
+            let hideTimer = null;
+
+            function lookupWord(word) {
+                const lower = word.toLowerCase().replace(/[^a-z\-]/g, '');
+                if (!lower || lower.length < 2) return null;
+                // Try exact match
+                if (WORD_DICT[lower]) return { word: lower, meaning: WORD_DICT[lower] };
+                // Try removing common suffixes
+                const suffixes = ['ing', 'ed', 'es', 's', 'er', 'est', 'ly', 'ment', 'tion', 'sion', 'ness', 'ity', 'ous', 'ive', 'able', 'ible', 'ful', 'less', 'al', 'ial'];
+                for (const suf of suffixes) {
+                    if (lower.endsWith(suf) && lower.length > suf.length + 2) {
+                        const stem = lower.slice(0, -suf.length);
+                        if (WORD_DICT[stem]) return { word: stem, meaning: WORD_DICT[stem], original: lower };
+                        // Try adding 'e' back
+                        if (WORD_DICT[stem + 'e']) return { word: stem + 'e', meaning: WORD_DICT[stem + 'e'], original: lower };
+                        // Try doubling removal (e.g., running -> run)
+                        if (stem.length > 2 && stem[stem.length-1] === stem[stem.length-2]) {
+                            const dstem = stem.slice(0, -1);
+                            if (WORD_DICT[dstem]) return { word: dstem, meaning: WORD_DICT[dstem], original: lower };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function showTooltip(e, word) {
+                const result = lookupWord(word);
+                if (!result) return;
+
+                if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+
+                tooltip.innerHTML = '<span class="wt-word">' + result.word + '</span><span class="wt-meaning">' + result.meaning + '</span>';
+
+                // Position
+                const rect = (e.target && e.target.getBoundingClientRect) ? e.target.getBoundingClientRect() : null;
+                let x, y;
+                if (e.touches && e.touches[0]) {
+                    x = e.touches[0].clientX;
+                    y = e.touches[0].clientY;
+                } else {
+                    x = e.clientX || (rect ? rect.left : 100);
+                    y = e.clientY || (rect ? rect.top : 100);
+                }
+
+                tooltip.style.left = Math.min(x, window.innerWidth - 280) + 'px';
+                tooltip.style.top = Math.max(10, y - 50) + 'px';
+                tooltip.classList.add('visible');
+
+                hideTimer = setTimeout(function() {
+                    tooltip.classList.remove('visible');
+                }, 2500);
+            }
+
+            function getWordAtPoint(e) {
+                let x, y;
+                if (e.touches && e.touches[0]) {
+                    x = e.touches[0].clientX;
+                    y = e.touches[0].clientY;
+                } else {
+                    x = e.clientX;
+                    y = e.clientY;
+                }
+
+                // Use caretPositionFromPoint or caretRangeAtPoint
+                let range;
+                if (document.caretRangeAtPoint) {
+                    range = document.caretRangeAtPoint(x, y);
+                } else if (document.caretPositionFromPoint) {
+                    const pos = document.caretPositionFromPoint(x, y);
+                    if (pos && pos.offsetNode) {
+                        range = document.createRange();
+                        range.setStart(pos.offsetNode, pos.offset);
+                        range.setEnd(pos.offsetNode, pos.offset);
+                    }
+                }
+
+                if (!range || !range.startContainer || range.startContainer.nodeType !== 3) return null;
+
+                const textNode = range.startContainer;
+                const text = textNode.textContent;
+                const offset = range.startOffset;
+
+                // Find word boundaries
+                let start = offset;
+                let end = offset;
+                while (start > 0 && /[a-zA-Z\'\-]/.test(text[start - 1])) start--;
+                while (end < text.length && /[a-zA-Z\'\-]/.test(text[end])) end++;
+
+                const word = text.substring(start, end).replace(/^[\'\-]+|[\'\-]+$/g, '');
+                if (word.length < 2 || !/[a-zA-Z]/.test(word)) return null;
+                return word;
+            }
+
+            // Touch event for mobile
+            document.addEventListener('touchstart', function(e) {
+                // Ignore touches on buttons, inputs, selects, checkboxes
+                const tag = e.target.tagName;
+                if (['BUTTON','INPUT','SELECT','LABEL','TEXTAREA','A'].indexOf(tag) >= 0) return;
+                if (e.target.closest('button, input, select, label, textarea, a, .nav-item, .sub-tab, .category-item, .cat-select-btn')) return;
+
+                const word = getWordAtPoint(e);
+                if (word) showTooltip(e, word);
+            }, { passive: true });
+
+            // Hover event for desktop
+            let hoverTimer = null;
+            document.addEventListener('mousemove', function(e) {
+                if (hoverTimer) clearTimeout(hoverTimer);
+                hoverTimer = setTimeout(function() {
+                    const tag = e.target.tagName;
+                    if (['BUTTON','INPUT','SELECT','LABEL','TEXTAREA','A'].indexOf(tag) >= 0) return;
+                    const word = getWordAtPoint(e);
+                    if (word) showTooltip(e, word);
+                }, 300);
+            });
+
+            // Hide on scroll
+            document.addEventListener('scroll', function() {
+                tooltip.classList.remove('visible');
+            }, true);
+        })();
+
+
         // ====================================================================
         // DATA INITIALIZATION
         // ====================================================================
@@ -3902,20 +4067,61 @@ society:[
 
             // Speed Reading
             const readingContent = document.getElementById('weak-reading');
-            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="level1">Lv.1 入門 (IELTS 4.0-4.5)</option><option value="level2">Lv.2 初級 (IELTS 4.5-5.0)</option><option value="level3">Lv.3 中級 (IELTS 5.0-5.5)</option><option value="level4">Lv.4 中上級 (IELTS 5.5-6.0)</option><option value="level5">Lv.5 上級 (IELTS 6.0-6.5)</option><option value="level6">Lv.6 専門 (IELTS 6.5-7.0)</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; margin-bottom: 16px; display: none; background: #1F4E79; color: white; padding: 16px; border-radius: 10px;"><div style="font-size: 11px; margin-bottom: 4px; opacity: 0.8;">経過時間</div><span id="timerValue" style="font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px;">00:00</span></div><div id="readingControls" style="display: none; gap: 8px; margin-bottom: 14px;"><button class="btn btn-success" id="startTimer" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600;">⏱ タイマースタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600; display: none;">⏹ 読了</button></div><div id="readingContent"></div><div id="readingQuestions" style="margin-top: 16px;"></div><div id="submitReadingWrap" style="display: none; position: sticky; bottom: 0; padding: 10px 0; background: white; z-index: 10;"><button class="btn btn-primary" id="submitReading" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600;">📝 採点する</button></div><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
+            readingContent.innerHTML = '<div class="card"><label style="display: block; margin-bottom: 12px; font-weight: 600;">レベル選択</label><select id="readingLevel"><option value="level1">Lv.1 入門 (IELTS 4.0-4.5)</option><option value="level2">Lv.2 初級 (IELTS 4.5-5.0)</option><option value="level3">Lv.3 中級 (IELTS 5.0-5.5)</option><option value="level4">Lv.4 中上級 (IELTS 5.5-6.0)</option><option value="level5">Lv.5 上級 (IELTS 6.0-6.5)</option><option value="level6">Lv.6 専門 (IELTS 6.5-7.0)</option></select><div id="readingTopics" style="margin-bottom: 12px;"></div><div id="readingTimer" style="text-align: center; margin-bottom: 16px; display: none; background: #1F4E79; color: white; padding: 16px; border-radius: 10px;"><div style="font-size: 11px; margin-bottom: 4px; opacity: 0.8;">経過時間</div><span id="timerValue" style="font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px;">00:00</span></div><div id="passageNav" style="display: none; align-items: center; gap: 8px; margin-bottom: 12px;"></div><div id="readingControls" style="display: none; gap: 8px; margin-bottom: 14px;"><button class="btn btn-success" id="startTimer" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600;">⏱ タイマースタート</button><button class="btn btn-danger" id="finishReading" style="flex: 1; padding: 12px; font-size: 16px; font-weight: 600; display: none;">⏹ 読了</button></div><div id="readingContent"></div><div id="readingQuestions" style="margin-top: 16px;"></div><div id="submitReadingWrap" style="display: none; position: sticky; bottom: 0; padding: 10px 0; background: white; z-index: 10;"><button class="btn btn-primary" id="submitReading" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600;">📝 採点する</button></div><div id="readingWPM" style="text-align: center; margin-top: 12px; display: none;"></div></div>';
 
             let readingStartTime = null;
             let readingInterval = null;
+            let currentPassageIdx = 0;
+            let currentPassages = null;
+
+            const topicNamesJa = {environment:'環境',education:'教育',technology:'テクノロジー',health:'健康',society:'社会'};
 
             function populateTopics(level) {
                 const topics = Object.keys(speedTexts[level] || {});
                 const topicsSelect = document.getElementById('readingTopics');
                 if (topics.length > 0) {
-                    topicsSelect.innerHTML = '<select id="readingTopic"><option value="">トピック選択</option>' + topics.map(t => '<option value="' + t + '">' + t + '</option>').join('') + '</select>';
+                    topicsSelect.innerHTML = '<select id="readingTopic"><option value="">トピック選択</option>' + topics.map(t => '<option value="' + t + '">' + (topicNamesJa[t] || t) + ' (' + (Array.isArray(speedTexts[level][t]) ? speedTexts[level][t].length : 1) + '篇)</option>').join('') + '</select>';
                     const firstTopic = topics[0];
                     document.getElementById('readingTopic').value = firstTopic;
                     document.getElementById('readingTopic').dispatchEvent(new Event('change', {bubbles: true}));
                 }
+            }
+
+            function loadPassage(data) {
+                if (!data) return;
+                document.getElementById('readingContent').innerHTML = '<div style="white-space: pre-wrap; line-height: 1.6; padding: 12px; background: var(--light); border-radius: 6px; font-size: 14px; margin-bottom: 12px;">' + data.text + '</div>' + (data.ja ? '<details style="margin-bottom: 12px;"><summary style="cursor: pointer; color: var(--accent); font-weight: 600; font-size: 13px; padding: 8px 0;">日本語訳を表示</summary><div style="white-space: pre-wrap; line-height: 1.6; padding: 12px; background: #FFF8E1; border-radius: 6px; font-size: 13px; color: #555;">' + data.ja + '</div></details>' : '');
+
+                let qsHtml = '';
+                if (data.qs) {
+                    data.qs.forEach((q, i) => {
+                        qsHtml += '<div style="margin-bottom: 12px; padding: 12px; background: var(--light); border-radius: 6px;"><div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Q' + (i+1) + ': ' + q.q + '</div><div>' + q.opts.map((opt, j) => '<label style="display: block; margin: 6px 0;"><input type="radio" name="comp' + i + '" value="' + j + '" style="margin-right: 6px;"> ' + opt + '</label>').join('') + '</div></div>';
+                    });
+                }
+                document.getElementById('readingQuestions').innerHTML = qsHtml;
+                document.getElementById('submitReadingWrap').style.display = (data.qs && data.qs.length > 0) ? 'block' : 'none';
+
+                // Show reading controls - reset timer state
+                document.getElementById('readingControls').style.display = 'flex';
+                document.getElementById('startTimer').style.display = 'block';
+                document.getElementById('finishReading').style.display = 'none';
+                document.getElementById('readingTimer').style.display = 'none';
+                document.getElementById('readingWPM').style.display = 'none';
+                if (readingInterval) clearInterval(readingInterval);
+                readingStartTime = null;
+
+                // Update passage navigation
+                updatePassageNav();
+            }
+
+            function updatePassageNav() {
+                const navEl = document.getElementById('passageNav');
+                if (!navEl) return;
+                if (!currentPassages || currentPassages.length <= 1) {
+                    navEl.style.display = 'none';
+                    return;
+                }
+                navEl.style.display = 'flex';
+                navEl.innerHTML = '<button id="prevPassage" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;"' + (currentPassageIdx <= 0 ? ' disabled' : '') + '>← 前</button><span style="flex: 1; text-align: center; font-weight: 600; color: var(--primary); line-height: 36px;">' + (currentPassageIdx + 1) + ' / ' + currentPassages.length + '</span><button id="nextPassage" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;"' + (currentPassageIdx >= currentPassages.length - 1 ? ' disabled' : '') + '>次 →</button>';
             }
 
             document.getElementById('readingLevel').addEventListener('change', (e) => {
@@ -3927,25 +4133,18 @@ society:[
                 if (e.target.id === 'readingTopic') {
                     const level = document.getElementById('readingLevel').value;
                     const topic = e.target.value;
-                    const data = speedTexts[level][topic];
-                    if (data) {
-                        document.getElementById('readingContent').innerHTML = '<div style="white-space: pre-wrap; line-height: 1.6; padding: 12px; background: var(--light); border-radius: 6px; font-size: 14px; margin-bottom: 12px;">' + data.text + '</div>' + (data.ja ? '<details style="margin-bottom: 12px;"><summary style="cursor: pointer; color: var(--accent); font-weight: 600; font-size: 13px; padding: 8px 0;">日本語訳を表示</summary><div style="white-space: pre-wrap; line-height: 1.6; padding: 12px; background: #FFF8E1; border-radius: 6px; font-size: 13px; color: #555;">' + data.ja + '</div></details>' : '');
+                    const rawData = speedTexts[level] && speedTexts[level][topic];
+                    if (!rawData) return;
 
-                        let qsHtml = '';
-                        data.qs.forEach((q, i) => {
-                            qsHtml += '<div style="margin-bottom: 12px; padding: 12px; background: var(--light); border-radius: 6px;"><div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Q' + (i+1) + ': ' + q.q + '</div><div>' + q.opts.map((opt, j) => '<label style="display: block; margin: 6px 0;"><input type="radio" name="comp' + i + '" value="' + j + '" style="margin-right: 6px;"> ' + opt + '</label>').join('') + '</div></div>';
-                        });
-                        document.getElementById('readingQuestions').innerHTML = qsHtml;
-                        document.getElementById('submitReadingWrap').style.display = 'block';
-
-                        // Show reading controls - reset timer state
-                        document.getElementById('readingControls').style.display = 'flex';
-                        document.getElementById('startTimer').style.display = 'block';
-                        document.getElementById('finishReading').style.display = 'none';
-                        document.getElementById('readingTimer').style.display = 'none';
-                        document.getElementById('readingWPM').style.display = 'none';
-                        if (readingInterval) clearInterval(readingInterval);
-                        readingStartTime = null;
+                    // Handle both array and single object formats
+                    if (Array.isArray(rawData)) {
+                        currentPassages = rawData;
+                        currentPassageIdx = 0;
+                        loadPassage(rawData[0]);
+                    } else {
+                        currentPassages = [rawData];
+                        currentPassageIdx = 0;
+                        loadPassage(rawData);
                     }
                 }
             });
@@ -3968,16 +4167,37 @@ society:[
                     const elapsed = (Date.now() - readingStartTime) / 60000;
                     const wordCount = document.getElementById('readingContent').textContent.match(/\b\w+\b/g).length;
                     const wpm = Math.round(wordCount / elapsed);
-                    document.getElementById('readingWPM').innerHTML = '<div style="font-size: 16px; font-weight: 600; color: var(--primary);">読速: ' + wpm + ' WPM</div>';
+                    const wpmColor = wpm >= 250 ? '#28A745' : wpm >= 200 ? '#2E75B6' : wpm >= 150 ? '#FFC107' : '#DC3545';
+                    const wpmLabel = wpm >= 250 ? '🎯 Band 7+ レベル！' : wpm >= 200 ? '👍 あと少しでBand 7!' : wpm >= 150 ? '📈 平均的 - もう少し速く!' : '🔰 ゆっくり - 練習を続けよう';
+                    let wpmHtml = '<div style="padding: 16px; background: white; border-radius: 10px; border: 2px solid ' + wpmColor + ';">';
+                    wpmHtml += '<div style="font-size: 14px; color: #666; text-align: center;">あなたの読速</div>';
+                    wpmHtml += '<div style="font-size: 40px; font-weight: 700; color: ' + wpmColor + '; text-align: center;">' + wpm + ' <span style="font-size: 16px;">WPM</span></div>';
+                    wpmHtml += '<div style="font-size: 13px; text-align: center; margin-bottom: 12px;">' + wpmLabel + '</div>';
+                    // WPM gauge bar
+                    wpmHtml += '<div style="position: relative; height: 24px; background: linear-gradient(to right, #DC3545 0%, #FFC107 37%, #2E75B6 50%, #28A745 62%, #28A745 100%); border-radius: 12px; margin-bottom: 6px;">';
+                    const markerPos = Math.min(Math.max((wpm / 400) * 100, 2), 98);
+                    wpmHtml += '<div style="position: absolute; left: ' + markerPos + '%; top: -4px; transform: translateX(-50%); width: 4px; height: 32px; background: #333; border-radius: 2px;"></div>';
+                    wpmHtml += '</div>';
+                    wpmHtml += '<div style="display: flex; justify-content: space-between; font-size: 10px; color: #999;">';
+                    wpmHtml += '<span>0</span><span style="color: #DC3545;">150</span><span style="color: #FFC107;">200</span><span style="color: #28A745; font-weight: 600;">250 (Band7)</span><span>400</span>';
+                    wpmHtml += '</div>';
+                    wpmHtml += '<div style="margin-top: 10px; font-size: 11px; color: #888; text-align: center;">🎯 Band 7目標: 200〜300 WPM ｜ 語数: ' + wordCount + '語</div>';
+                    wpmHtml += '</div>';
+                    document.getElementById('readingWPM').innerHTML = wpmHtml;
                     document.getElementById('readingWPM').style.display = 'block';
                 }
+                if (e.target.id === 'prevPassage' || e.target.id === 'nextPassage') {
+                    if (e.target.id === 'prevPassage' && currentPassageIdx > 0) {
+                        currentPassageIdx--;
+                        loadPassage(currentPassages[currentPassageIdx]);
+                    } else if (e.target.id === 'nextPassage' && currentPassages && currentPassageIdx < currentPassages.length - 1) {
+                        currentPassageIdx++;
+                        loadPassage(currentPassages[currentPassageIdx]);
+                    }
+                }
                 if (e.target.id === 'submitReading') {
-                    const level = document.getElementById('readingLevel').value;
-                    const topicEl = document.getElementById('readingTopic');
-                    if (!topicEl) return;
-                    const topic = topicEl.value;
-                    const data = speedTexts[level] && speedTexts[level][topic];
-                    if (!data) return;
+                    const data = currentPassages && currentPassages[currentPassageIdx];
+                    if (!data || !data.qs) return;
                     let correct = 0;
                     let total = data.qs.length;
                     let resultHtml = '';
@@ -4079,6 +4299,7 @@ society:[
         function renderStatsTab() {
             const container = document.getElementById('statsContent');
 
+            // 全体の完了タスク数を計算
             const completedTasksCount = Object.values(APP_STATE.completedTasks).filter(v => v).length;
             const totalTasks = CALENDAR_DATA.reduce((sum, day) => {
                 if (!day.isRest) {
@@ -4086,10 +4307,117 @@ society:[
                 }
                 return sum;
             }, 0);
-
             const completionRate = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
 
-            container.innerHTML = '<div class="stat-box"><div class="stat-value">' + completionRate + '%</div><div class="stat-label">全体進捗</div></div><div class="stat-box" style="background: linear-gradient(135deg, #FF9800, #F57C00);"><div class="stat-value">' + completedTasksCount + '</div><div class="stat-label">完了したタスク</div></div><div class="card"><div style="font-weight: 600; color: var(--primary); margin-bottom: 12px;">週間サマリー</div><div style="font-size: 13px; color: #666;"><div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>カレンダー期間:</span><strong>' + CALENDAR_DATA[0].date + ' ~ ' + CALENDAR_DATA[CALENDAR_DATA.length-1].date + '</strong></div><div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>総日数:</span><strong>67日</strong></div><div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>休息日:</span><strong>' + CALENDAR_DATA.filter(d => d.isRest).length + '日</strong></div></div></div><div class="card"><div style="font-weight: 600; color: var(--primary); margin-bottom: 12px;">学習スケジュール</div><div style="font-size: 13px; color: #666; line-height: 1.6;">朝 6:30-7:00 / 通勤 8:00-8:20 / 午前・午後 / 夜 20:00-21:10 / 就寝前 22:00</div></div>';
+            // 暗記済み文数
+            const memorizedCount = Object.values(APP_STATE.memorizedSentences || {}).filter(v => v).length;
+
+            // 日別進捗を計算
+            let dailyStats = [];
+            let currentWeek = '';
+            let weeklyData = {};
+
+            CALENDAR_DATA.forEach((day, dayIdx) => {
+                if (day.isRest) return;
+                let dayTotal = 0;
+                let dayCompleted = 0;
+                day.tasks.forEach((tb, blockIdx) => {
+                    tb.detail.split('\n').forEach((line, lineIdx) => {
+                        if (line.trim()) {
+                            dayTotal++;
+                            const key = day.date + '-block-' + blockIdx + '-line-' + lineIdx;
+                            if (APP_STATE.completedTasks[key]) dayCompleted++;
+                        }
+                    });
+                });
+                const pct = dayTotal > 0 ? Math.round((dayCompleted / dayTotal) * 100) : 0;
+                dailyStats.push({ date: day.dateDisplay, dayName: day.dayName, week: day.week, total: dayTotal, done: dayCompleted, pct: pct });
+
+                // 週別集計
+                const weekKey = day.week;
+                if (!weeklyData[weekKey]) weeklyData[weekKey] = { total: 0, done: 0 };
+                weeklyData[weekKey].total += dayTotal;
+                weeklyData[weekKey].done += dayCompleted;
+            });
+
+            let html = '';
+
+            // 全体進捗カード
+            html += '<div class="stat-box"><div class="stat-value">' + completionRate + '%</div><div class="stat-label">全体進捗</div></div>';
+            html += '<div style="display: flex; gap: 8px; margin-bottom: 12px;">';
+            html += '<div class="stat-box" style="flex: 1; background: linear-gradient(135deg, #FF9800, #F57C00);"><div class="stat-value" style="font-size: 24px;">' + completedTasksCount + '</div><div class="stat-label">完了タスク</div></div>';
+            html += '<div class="stat-box" style="flex: 1; background: linear-gradient(135deg, #9C27B0, #7B1FA2);"><div class="stat-value" style="font-size: 24px;">' + memorizedCount + '</div><div class="stat-label">暗記済み文</div></div>';
+            html += '</div>';
+
+            // 週別進捗
+            html += '<div class="card"><div style="font-weight: 600; color: var(--primary); margin-bottom: 12px;">週別進捗</div>';
+            Object.entries(weeklyData).forEach(([weekName, data]) => {
+                const weekPct = data.total > 0 ? Math.round((data.done / data.total) * 100) : 0;
+                const barColor = weekPct >= 80 ? '#28A745' : weekPct >= 50 ? '#FFC107' : weekPct > 0 ? '#2E75B6' : '#E0E0E0';
+                html += '<div style="margin-bottom: 10px;">';
+                html += '<div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px;"><span style="font-weight: 600;">' + weekName.replace(/ \(.*\)/, '') + '</span><span style="color: #666;">' + data.done + '/' + data.total + ' (' + weekPct + '%)</span></div>';
+                html += '<div style="height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' + weekPct + '%; background: ' + barColor + '; border-radius: 4px; transition: width 0.3s;"></div></div>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            // 日別カレンダービュー（直近14日）
+            const todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0') + '-' + String(new Date().getDate()).padStart(2,'0');
+            const todayCalIdx = CALENDAR_DATA.findIndex(d => d.date === todayStr);
+            const startShow = Math.max(0, todayCalIdx - 6);
+            const endShow = Math.min(CALENDAR_DATA.length, todayCalIdx + 8);
+
+            html += '<div class="card"><div style="font-weight: 600; color: var(--primary); margin-bottom: 12px;">日別進捗カレンダー</div>';
+            html += '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;">';
+
+            for (let i = startShow; i < endShow; i++) {
+                const day = CALENDAR_DATA[i];
+                let cellColor = '#f5f5f5';
+                let textColor = '#999';
+                let label = day.dateDisplay.split('/')[1];
+
+                if (day.isRest) {
+                    cellColor = '#f0f0f0';
+                    textColor = '#ccc';
+                } else {
+                    // Calculate this day's completion
+                    let dt = 0, dc = 0;
+                    day.tasks.forEach((tb, bi) => {
+                        tb.detail.split('\n').forEach((line, li) => {
+                            if (line.trim()) {
+                                dt++;
+                                if (APP_STATE.completedTasks[day.date + '-block-' + bi + '-line-' + li]) dc++;
+                            }
+                        });
+                    });
+                    const dp = dt > 0 ? dc / dt : 0;
+                    if (dp >= 1) { cellColor = '#28A745'; textColor = 'white'; }
+                    else if (dp >= 0.5) { cellColor = '#FFC107'; textColor = 'white'; }
+                    else if (dp > 0) { cellColor = '#FFE0B2'; textColor = '#333'; }
+                }
+
+                const isToday = day.date === todayStr;
+                const border = isToday ? 'border: 2px solid var(--primary);' : '';
+
+                html += '<div style="padding: 6px 2px; border-radius: 6px; background: ' + cellColor + '; color: ' + textColor + '; font-size: 11px; font-weight: 600; ' + border + '">';
+                html += '<div>' + day.dayName + '</div><div>' + label + '</div>';
+                html += '</div>';
+            }
+            html += '</div>';
+            html += '<div style="margin-top: 8px; display: flex; gap: 8px; justify-content: center; font-size: 10px; color: #999;">';
+            html += '<span>⬜ 未着手</span><span style="color: #FFE0B2;">🟨 一部完了</span><span style="color: #FFC107;">🟡 50%+</span><span style="color: #28A745;">🟢 100%</span>';
+            html += '</div></div>';
+
+            // カレンダー情報
+            html += '<div class="card"><div style="font-weight: 600; color: var(--primary); margin-bottom: 12px;">カレンダー情報</div>';
+            html += '<div style="font-size: 13px; color: #666;">';
+            html += '<div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>期間:</span><strong>' + CALENDAR_DATA[0].date + ' ~ ' + CALENDAR_DATA[CALENDAR_DATA.length-1].date + '</strong></div>';
+            html += '<div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>総日数:</span><strong>' + CALENDAR_DATA.length + '日</strong></div>';
+            html += '<div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>稼働日:</span><strong>' + CALENDAR_DATA.filter(d => !d.isRest).length + '日</strong></div>';
+            html += '<div style="display: flex; justify-content: space-between; margin: 6px 0;"><span>休息日:</span><strong>' + CALENDAR_DATA.filter(d => d.isRest).length + '日</strong></div>';
+            html += '</div></div>';
+
+            container.innerHTML = html;
         }
 
         // ====================================================================
@@ -4200,13 +4528,25 @@ society:[
                 APP_STATE.currentDateIndex = todayIdx;
             }
 
+            // 起動時に状態を保存（日付更新を反映）
+            saveState();
+
             setupTabNavigation();
             setupDayNavigation();
             renderTodayTab();
         }
 
+        // 定期的に自動保存（30秒ごと）
+        setInterval(saveState, 30000);
+
         document.addEventListener('DOMContentLoaded', init);
         window.addEventListener('beforeunload', saveState);
+        // モバイルでバックグラウンドに入る時も保存
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                saveState();
+            }
+        });
     </script>
 </body>
 </html>
